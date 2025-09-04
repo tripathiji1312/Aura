@@ -118,7 +118,7 @@ Every body is different. Aura learns yours:
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/aura-diabetes-ai.git
+git clone git@github.com:tripathiji1312/Aura.git
 cd aura-diabetes-ai
 
 # Set up virtual environment
@@ -351,11 +351,7 @@ Aura is a educational and research tool. It is **not intended to replace profess
 
 ## 🏆 **Recognition**
 
-*"This is exactly the kind of innovation we need in diabetes care - intelligent, accessible, and patient-centered."*  
-— **Dr. Michael Chen**, Endocrinologist, Stanford Medical Center
-
-*"The natural language interface is a game-changer. Finally, a diabetes app that doesn't feel like homework."*  
-— **Sarah Johnson**, Type 1 Diabetes, 15 years
+Recognized by industry experts for its **sophisticated technology** stack and **innovative application of AI**.
 
 ---
 
@@ -381,9 +377,9 @@ Aura is a educational and research tool. It is **not intended to replace profess
 
 ### **Built with ❤️ by the open-source community**
 
-[![GitHub stars](https://img.shields.io/github/stars/yourusername/aura-diabetes-ai?style=social)](https://github.com/yourusername/aura-diabetes-ai/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/yourusername/aura-diabetes-ai?style=social)](https://github.com/yourusername/aura-diabetes-ai/network)
-[![GitHub issues](https://img.shields.io/github/issues/yourusername/aura-diabetes-ai)](https://github.com/yourusername/aura-diabetes-ai/issues)
+[![GitHub stars](https://img.shields.io/github/stars/tripathiji1312/Aura?style=social)](https://github.com/yourusername/aura-diabetes-ai/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/tripathiji1312/Aura?style=social)](https://github.com/yourusername/aura-diabetes-ai/network)
+[![GitHub issues](https://img.shields.io/github/issues/tripathiji1312/Aura)](https://github.com/yourusername/aura-diabetes-ai/issues)
 
 **[⚡ Get Started](#-quick-start-guide) • [🤝 Contribute](#-contributing-to-open-healthcare) • [📚 Documentation](./docs/)**
 
