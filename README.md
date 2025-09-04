@@ -2,6 +2,8 @@
 
 # 🌟 Aura
 ### *AI-Powered Diabetes Management for Everyone*
+<img width="678" height="195" alt="image" src="https://github.com/user-attachments/assets/f9229f64-51ff-46a0-bd06-9b2604697bee" />
+
 
 **Open-source intelligence meets personalized healthcare • Empowering the 422 million people living with diabetes worldwide**
 
