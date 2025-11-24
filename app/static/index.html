@@ -1,0 +1,1873 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aura</title>
+  <!-- Importing Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lora:wght@700&display=swap"
+    rel="stylesheet" />
+
+  <!-- Chart.js library for the dashboard -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    /* --- THEME COLORS & DARK MODE --- */
+    :root {
+      --background-color: #f8fafc;
+      --surface-color: #ffffff;
+      --border-color: #e2e8f0;
+      --primary-text-color: #1e29b;
+      --secondary-text-color: #64748b;
+      --accent-color: #7c3aed;
+      --accent-light-color: #f5f3ff;
+      --chart-grid-color: #e5e7eb;
+    }
+
+    body[data-theme="dark"] {
+      --background-color: #111827;
+      --surface-color: #1f2937;
+      --border-color: #374151;
+      --primary-text-color: #f9fafb;
+      --secondary-text-color: #9ca3af;
+      --accent-light-color: #3730a3;
+      --chart-grid-color: #4b5563;
+    }
+
+    /* --- UNIFIED BACKGROUND & HOVER UPGRADES --- */
+    body {
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      color: var(--primary-text-color);
+      background: var(--background-color);
+      transition: background-color 0.3s ease, color 0.3s ease;
+      overflow-x: hidden;
+    }
+
+    header#mainHeader {
+      position: relative;
+      z-index: 50;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.5rem 2rem;
+      max-width: 1280px;
+      margin: 0 auto;
+    }
+
+    .logo {
+      font-weight: 700;
+      font-size: 1.75rem;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out;
+      background: linear-gradient(135deg, #7c3aed 0%, #ec4899 50%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .logo::before {
+      content: "✨";
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, #7c3aed 0%, #ec4899 50%, #06b6d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: sparkle 2s ease-in-out infinite;
+    }
+
+    body[data-theme="dark"] .logo {
+      background: linear-gradient(135deg, #a78bfa 0%, #f472b6 50%, #22d3ee 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    body[data-theme="dark"] .logo::before {
+      background: linear-gradient(135deg, #a78bfa 0%, #f472b6 50%, #22d3ee 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    @keyframes sparkle {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: 0.7;
+        transform: scale(1.1);
+      }
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      border-radius: 9999px;
+      padding: 0.25rem 0.5rem;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+        0 2px 4px -2px rgb(0 0 0 / 0.1);
+    }
+
+    body[data-theme="dark"] nav {
+      background: rgba(31, 41, 55, 0.75);
+      border-color: rgba(55, 65, 81, 0.5);
+    }
+
+    nav a {
+      margin: 0 0.25rem;
+      padding: 0.5rem 1rem;
+      text-decoration: none;
+      color: #334155;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+      border-radius: 9999px;
+    }
+
+    body[data-theme="dark"] nav a {
+      color: var(--secondary-text-color);
+    }
+
+    nav a:not(.animated-gradient):hover {
+      color: var(--accent-color);
+      background-color: rgba(237, 233, 254, 0.5);
+    }
+
+    body[data-theme="dark"] nav a:not(.animated-gradient):hover {
+      background-color: var(--accent-light-color);
+      color: var(--primary-text-color);
+    }
+
+    .hero-section {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 6rem 2rem 18rem;
+      overflow: hidden;
+      background: linear-gradient(to bottom,
+          var(--accent-light-color),
+          var(--background-color) 300px);
+    }
+
+    .page-background-image {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 1500px;
+      max-width: none;
+      z-index: 0;
+      opacity: 0.6;
+      filter: brightness(1);
+      transition: filter 0.3s ease;
+    }
+
+    body[data-theme="dark"] .page-background-image {
+      filter: brightness(0.7);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-content h1 {
+      font-family: "Lora", serif;
+      font-size: 4rem;
+      margin-bottom: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      line-height: 1.15;
+    }
+
+    .hero-content p {
+      font-size: 1.25rem;
+      color: #475569;
+      margin: 0 auto 2.5rem;
+      max-width: 600px;
+      line-height: 1.6;
+    }
+
+    body[data-theme="dark"] .hero-content p {
+      color: var(--secondary-text-color);
+    }
+
+    .cta-button {
+      color: #fff;
+      padding: 1rem 2rem;
+      border-radius: 9999px;
+      text-decoration: none;
+      font-weight: 600;
+      transition: background-color 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .form-page-wrapper {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 2rem;
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(to bottom,
+          var(--accent-light-color),
+          var(--background-color) 300px);
+    }
+
+    .form-page-wrapper .page-background-image {
+      opacity: 0.3;
+      /* Make it more subtle on form pages */
+    }
+
+    .form-container {
+      width: 100%;
+      max-width: 450px;
+      padding: 2.5rem;
+      background-color: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: 0.75rem;
+      box-sizing: border-box;
+      box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+      position: relative;
+      z-index: 1;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .form-container h2 {
+      text-align: center;
+      font-size: 1.5rem;
+      margin-top: 0;
+      margin-bottom: 2rem;
+      color: var(--primary-text-color);
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--secondary-text-color);
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 0.5rem;
+      background-color: var(--background-color);
+      color: var(--primary-text-color);
+      box-sizing: border-box;
+      font-family: "Inter", sans-serif;
+      font-size: 1rem;
+      transition: border-color 0.2s ease-in-out,
+        box-shadow 0.2s ease-in-out, background-color 0.3s ease;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus {
+      border-color: var(--accent-color);
+      box-shadow: 0 0 0 3px var(--accent-light-color);
+      outline: none;
+    }
+
+    .form-row {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .form-row .form-group {
+      flex: 1;
+    }
+
+    .submit-button {
+      width: 100%;
+      padding: 0.75rem;
+      border: none;
+      border-radius: 0.5rem;
+      color: #fff;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .form-footer {
+      text-align: center;
+      margin-top: 1.5rem;
+    }
+
+    .form-footer a {
+      color: var(--secondary-text-color);
+      text-decoration: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .form-footer a:hover {
+      color: var(--primary-text-color);
+    }
+
+    #dashboardPage {
+      background-color: transparent;
+    }
+
+    .dashboard-card {
+      background-color: var(--surface-color);
+      transition: transform 0.2s ease-in-out,
+        box-shadow 0.2s ease-in-out, background-color 0.3s ease;
+      border: 1px solid var(--border-color);
+    }
+
+    .dashboard-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 25px -3px rgb(0 0 0 / 0.1),
+        0 4px 6px -4px rgb(0 0 0 / 0.1);
+    }
+
+    body[data-theme="dark"] .dashboard-card:hover {
+      box-shadow: 0 10px 25px -3px rgb(0 0 0 / 0.3),
+        0 4px 6px -4px rgb(0 0 0 / 0.3);
+    }
+
+    /* --- CHART CONTAINER FIX --- */
+    #glucoseChart {
+      max-height: 300px !important;
+      height: 300px !important;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+      max-height: 300px;
+      overflow: hidden;
+    }
+
+    .dev-button {
+      transition: transform 0.2s ease-in-out, filter 0.2s ease-in-out;
+    }
+
+    .dev-button:hover {
+      transform: scale(1.05);
+      filter: brightness(1.1);
+    }
+
+    .chat-bubble {
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .chat-bubble:hover {
+      transform: scale(1.02);
+    }
+
+    .alert-bubble {
+      background-color: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+      font-weight: 500;
+    }
+
+    body[data-theme="dark"] .alert-bubble {
+      background-color: #450a0a;
+      color: #fca5a5;
+      border-color: #7f1d1d;
+    }
+
+    #chart-tooltip {
+      position: absolute;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+      z-index: 100;
+      font-size: 0.85rem;
+    }
+
+    /* --- ANIMATED GRADIENT STYLES --- */
+    .animated-gradient {
+      background-image: linear-gradient(to right,
+          #7c3aed 0%,
+          #ff69b4 50%,
+          #7c3aed 100%);
+      background-size: 200% 200%;
+      animation: gradient-move 3s ease infinite;
+      color: white !important;
+      border: none;
+    }
+
+    .animated-gradient:hover {
+      animation-play-state: paused;
+    }
+
+    @keyframes gradient-move {
+      0% {
+        background-position: 0% 50%;
+      }
+
+      50% {
+        background-position: 100% 50%;
+      }
+
+      100% {
+        background-position: 0% 50%;
+      }
+    }
+
+    /* --- THEME TOGGLE BUTTON --- */
+    #themeToggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 9999px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    #themeToggle:hover {
+      background-color: var(--accent-light-color);
+    }
+
+    #themeToggle svg {
+      width: 24px;
+      height: 24px;
+      fill: var(--primary-text-color);
+    }
+
+    #moonIcon {
+      display: none;
+    }
+
+    body[data-theme="dark"] #sunIcon {
+      display: none;
+    }
+
+    body[data-theme="dark"] #moonIcon {
+      display: block;
+    }
+
+    /* --- HEALTH SCORE STYLES --- */
+    .health-score-container {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .health-score-circle {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      background: conic-gradient(var(--accent-color) 0deg,
+          var(--accent-color) calc(var(--score-percentage) * 3.6deg),
+          var(--border-color) calc(var(--score-percentage) * 3.6deg),
+          var(--border-color) 360deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .health-score-inner {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      background-color: var(--surface-color);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+    }
+
+    .health-score-value {
+      font-size: 1.8rem;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .health-score-label {
+      font-size: 0.7rem;
+      color: var(--secondary-text-color);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .health-insights-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .insight-card {
+      padding: 1.5rem;
+      border-radius: 0.75rem;
+      background-color: var(--surface-color);
+      border: 1px solid var(--border-color);
+      transition: all 0.2s ease;
+    }
+
+    .insight-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    }
+
+    .insight-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .insight-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+    }
+
+    .insight-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: var(--primary-text-color);
+    }
+
+    .insight-content {
+      color: var(--secondary-text-color);
+      line-height: 1.5;
+      font-size: 0.9rem;
+    }
+
+    .insight-value {
+      font-weight: 600;
+      color: var(--primary-text-color);
+    }
+
+    /* Insight type colors */
+    .insight-glucose {
+      background-color: #ddd6fe;
+      color: #7c3aed;
+    }
+
+    .insight-activity {
+      background-color: #d1fae5;
+      color: #059669;
+    }
+
+    .insight-sleep {
+      background-color: #fef3c7;
+      color: #d97706;
+    }
+
+    .insight-nutrition {
+      background-color: #fce7f3;
+      color: #ec4899;
+    }
+
+    .insight-medication {
+      background-color: #dbeafe;
+      color: #2563eb;
+    }
+
+    .insight-stress {
+      background-color: #fee2e2;
+      color: #dc2626;
+    }
+
+    body[data-theme="dark"] .insight-glucose {
+      background-color: #3730a3;
+      color: #c4b5fd;
+    }
+
+    body[data-theme="dark"] .insight-activity {
+      background-color: #064e3b;
+      color: #6ee7b7;
+    }
+
+    body[data-theme="dark"] .insight-sleep {
+      background-color: #92400e;
+      color: #fcd34d;
+    }
+
+    body[data-theme="dark"] .insight-nutrition {
+      background-color: #9d174d;
+      color: #f9a8d4;
+    }
+
+    body[data-theme="dark"] .insight-medication {
+      background-color: #1e40af;
+      color: #93c5fd;
+    }
+
+    body[data-theme="dark"] .insight-stress {
+      background-color: #991b1b;
+      color: #fca5a5;
+    }
+
+    /* --- DASHBOARD ENHANCEMENTS --- */
+    .dashboard-header {
+      background: linear-gradient(135deg, var(--accent-color) 0%, #ec4899 100%);
+      border-radius: 1rem;
+      padding: 2rem;
+      color: white;
+      margin-bottom: 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .dashboard-header::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+      border-radius: 50%;
+      transform: translate(50%, -50%);
+    }
+
+    .dashboard-welcome {
+      position: relative;
+      z-index: 1;
+    }
+
+    .dashboard-welcome h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin: 0 0 0.5rem 0;
+      opacity: 0;
+      animation: slideInUp 0.6s ease-out 0.2s forwards;
+    }
+
+    .dashboard-welcome p {
+      font-size: 1.1rem;
+      opacity: 0.9;
+      margin: 0 0 1rem 0;
+      opacity: 0;
+      animation: slideInUp 0.6s ease-out 0.4s forwards;
+    }
+
+    .dashboard-stats-quick {
+      display: flex;
+      gap: 2rem;
+      margin-top: 1rem;
+      opacity: 0;
+      animation: slideInUp 0.6s ease-out 0.6s forwards;
+    }
+
+    .quick-stat {
+      text-align: center;
+    }
+
+    .quick-stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      display: block;
+    }
+
+    .quick-stat-label {
+      font-size: 0.8rem;
+      opacity: 0.8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    @keyframes slideInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .dashboard-controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .control-button {
+      padding: 0.5rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.1);
+      color: white;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .control-button:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+
+<body>
+  <header id="mainHeader">
+    <div class="logo" id="logo">Aura</div>
+    <nav>
+      <button id="themeToggle" title="Toggle theme">
+        <svg id="sunIcon" viewBox="0 0 24 24">
+          <path
+            d="M12 9a3 3 0 100 6 3 3 0 000-6zm0 8a5 5 0 110-10 5 5 0 010 10zm0-13a1 1 0 011 1v1a1 1 0 11-2 0V5a1 1 0 011-1zm-7.07 3.93a1 1 0 011.414 0l.707.707a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 010-1.414zm14.14 0a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM4 12a1 1 0 01-1-1H2a1 1 0 110-2h1a1 1 0 011 1zm16 0a1 1 0 01-1-1h-1a1 1 0 110-2h1a1 1 0 011 1zm-7.07 7.07a1 1 0 010-1.414l.707-.707a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414 0zm-5.656 0a1 1 0 011.414 1.414l-.707.707a1 1 0 01-1.414-1.414l.707-.707zM12 20a1 1 0 01-1-1v-1a1 1 0 112 0v1a1 1 0 01-1 1z">
+          </path>
+        </svg>
+        <svg id="moonIcon" viewBox="0 0 24 24">
+          <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+        </svg>
+      </button>
+      <a id="logInLink" class="animated-gradient">Log In</a>
+      <a id="registerLink" class="animated-gradient">Register</a>
+      <a href="#" id="downloadReportBtn" class="animated-gradient" style="display: none">Download Report</a>
+      <a href="#" id="logOutButton" style="display: none">Log Out</a>
+    </nav>
+  </header>
+
+  <div id="mainPage">
+    <section class="hero-section">
+      <div class="hero-content">
+        <h1>Welcome to Aura</h1>
+        <p>
+          Living with diabetes is challenging. Aura helps you make informed
+          decisions with AI-powered insights, predictions, and
+          recommendations.
+        </p>
+        <a href="#" class="cta-button animated-gradient" id="getStartedBtn">Get Started<span>&rarr;</span></a>
+      </div>
+      <img src="https://fly.io/phx/ui/images/cloud-city-a61199fec62cd744415fcdf4e1be8434.png?vsn=d"
+        class="page-background-image" alt="Cloud city illustration" />
+    </section>
+  </div>
+
+  <!-- Registration Page -->
+  <div id="registerPage" class="form-page-wrapper">
+    <div class="form-container">
+      <h2 class="text-2xl font-semibold text-center">Create Your Account</h2>
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="register-email">Email (for login)</label>
+          <input type="email" id="register-email" required />
+        </div>
+        <div class="form-group">
+          <label for="register-password">Password</label>
+          <input type="password" id="register-password" required />
+        </div>
+        <hr class="my-6 border-gray-200" />
+        <div class="form-group">
+          <label for="register-name">Full Name</label>
+          <input type="text" id="register-name" required />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="register-age">Age</label>
+            <input type="number" id="register-age" />
+          </div>
+          <div class="form-group">
+            <label for="register-gender">Gender</label>
+            <select id="register-gender">
+              <option value="">Select...</option>
+              <option value="Male">Male</option>
+              <option value="Female">Female</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="register-phone">Phone</label>
+          <input type="tel" id="register-phone" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="register-weight">Weight (kg)</label>
+            <input type="number" step="0.1" id="register-weight" />
+          </div>
+          <div class="form-group">
+            <label for="register-height">Height (cm)</label>
+            <input type="number" id="register-height" />
+          </div>
+        </div>
+        <button type="submit" class="submit-button mt-4 animated-gradient">
+          Create Account
+        </button>
+      </form>
+      <div class="form-footer">
+        <a href="#" id="backToLoginLink">&larr; Already have an account? Log in</a>
+      </div>
+    </div>
+    <img src="https://fly.io/phx/ui/images/cloud-city-a61199fec62cd744415fcdf4e1be8434.png?vsn=d"
+      class="page-background-image" alt="Cloud city illustration" />
+  </div>
+
+  <!-- Log-In Page -->
+  <div id="logInPage" class="form-page-wrapper">
+    <div class="form-container">
+      <h2 class="text-2xl font-semibold text-center">Log In to Aura</h2>
+      <form id="logInForm">
+        <div class="form-group">
+          <label for="email-login">Email address</label>
+          <input type="email" id="email-login" name="email" required />
+        </div>
+        <div class="form-group">
+          <label for="password-login">Password</label>
+          <input type="password" id="password-login" name="password" required />
+        </div>
+        <button type="submit" class="submit-button mt-2 animated-gradient">
+          Continue
+        </button>
+      </form>
+      <div class="form-footer">
+        <a href="#" class="backToHomeLink">&larr; Back to Home</a>
+      </div>
+    </div>
+    <img src="https://fly.io/phx/ui/images/cloud-city-a61199fec62cd744415fcdf4e1be8434.png?vsn=d"
+      class="page-background-image" alt="Cloud city illustration" />
+  </div>
+
+  <!-- Dashboard Page -->
+  <div id="dashboardPage" style="display: none" class="min-h-screen">
+    <div class="max-w-6xl mx-auto space-y-6 p-4 sm:p-6">
+      <!-- Professional Dashboard Header -->
+      <div class="dashboard-header">
+        <div class="dashboard-welcome">
+          <h1 id="dashboard-greeting">Welcome back!</h1>
+          <p id="dashboard-subtitle">Here's your health overview for today</p>
+          <div class="dashboard-stats-quick">
+            <div class="quick-stat">
+              <span id="quick-glucose" class="quick-stat-value">—</span>
+              <span class="quick-stat-label">Latest Reading</span>
+            </div>
+            <div class="quick-stat">
+              <span id="quick-score" class="quick-stat-value">—</span>
+              <span class="quick-stat-label">Health Score</span>
+            </div>
+            <div class="quick-stat">
+              <span id="quick-trend" class="quick-stat-value">—</span>
+              <span class="quick-stat-label">Trend</span>
+            </div>
+          </div>
+        </div>
+        <div class="dashboard-controls">
+          <button id="calibrateAiBtn" class="control-button">
+            🤖 Calibrate AI
+          </button>
+          <button id="devSimulateBtn" class="control-button">
+            📊 Add Demo Data
+          </button>
+        </div>
+      </div>
+      <div class="p-4 rounded-2xl shadow relative dashboard-card">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Glucose Levels</h3>
+          <div class="text-sm text-gray-500">Last 24 hours</div>
+        </div>
+        <div class="chart-container">
+          <canvas id="glucoseChart"></canvas>
+        </div>
+        <div id="chart-tooltip"></div>
+      </div>
+
+      <!-- Health Score Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        <div class="p-4 rounded-2xl shadow dashboard-card">
+          <div class="text-sm text-gray-500 mb-4 text-center">Daily Health Score</div>
+          <div class="health-score-container">
+            <div class="health-score-circle" style="--score-percentage: 0">
+              <div class="health-score-inner">
+                <div id="health-score-value" class="health-score-value">—</div>
+                <div class="health-score-label">Score</div>
+              </div>
+            </div>
+          </div>
+          <div id="health-score-trend" class="text-center text-xs text-gray-500 mt-2">—</div>
+        </div>
+
+        <div class="p-4 rounded-2xl shadow dashboard-card">
+          <div class="text-sm text-gray-500">Carbs Detected</div>
+          <div id="carbs-value" class="text-3xl font-bold">—</div>
+        </div>
+        <div class="p-4 rounded-2xl shadow dashboard-card">
+          <div class="text-sm text-gray-500">Insulin Suggestion</div>
+          <div id="dose-value" class="text-3xl font-bold">—</div>
+          <div id="dose-reason" class="text-xs text-gray-500 mt-2"></div>
+        </div>
+        <div class="p-4 rounded-2xl shadow dashboard-card">
+          <div class="text-sm text-gray-500">Short-Term Trend</div>
+          <div id="trend-value" class="text-3xl font-bold capitalize">—</div>
+        </div>
+      </div>
+
+      <!-- Health Insights Section -->
+      <div class="p-4 rounded-2xl shadow dashboard-card">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-lg font-semibold">Health Insights</h3>
+          <button id="refreshInsightsBtn" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+            Refresh
+          </button>
+        </div>
+        <div id="health-insights-container" class="health-insights-grid">
+          <div class="insight-card">
+            <div class="insight-content text-center text-gray-400">
+              No insights available yet. Start logging your data to see personalized health insights.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 rounded-2xl shadow dashboard-card">
+        <div id="chat-history" class="space-y-3 h-72 overflow-auto mb-3 p-2 border rounded-lg"
+          style="border-color: var(--border-color); transition: border-color 0.3s ease;"></div>
+        <div class="flex items-center gap-3">
+          <input id="chat-input" type="text" placeholder="e.g., had a sandwich and an apple for lunch"
+            class="flex-1 p-3 rounded-lg border" />
+          <button id="send-btn" class="px-4 py-3 bg-indigo-600 text-white rounded-lg font-semibold">
+            Send
+          </button>
+        </div>
+        <div id="thinking" class="mt-2 text-sm text-gray-500 hidden">
+          Aura is thinking…
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const BASE_URL = "";
+    let currentUserId = null;
+    let chartState = { chart: null, historicalData: [], predictionData: [] };
+
+    // --- ELEMENT REFERENCES ---
+    const pageRefs = {
+      mainPage: document.getElementById("mainPage"),
+      registerPage: document.getElementById("registerPage"),
+      logInPage: document.getElementById("logInPage"),
+      dashboardPage: document.getElementById("dashboardPage"),
+      mainHeader: document.getElementById("mainHeader"),
+    };
+    // Forms & Buttons
+    const registerForm = document.getElementById("registerForm");
+    const logInForm = document.getElementById("logInForm");
+    const registerLink = document.getElementById("registerLink");
+    const logInLink = document.getElementById("logInLink");
+    const logOutButton = document.getElementById("logOutButton");
+    const downloadReportBtn = document.getElementById("downloadReportBtn");
+    const backToLoginLink = document.getElementById("backToLoginLink");
+    const getStartedBtn = document.getElementById("getStartedBtn");
+    const logo = document.getElementById("logo");
+    const backToHomeLinks = document.querySelectorAll(".backToHomeLink");
+    const devSimulateBtn = document.getElementById("devSimulateBtn");
+    const calibrateAiBtn = document.getElementById("calibrateAiBtn");
+    const themeToggle = document.getElementById("themeToggle");
+    // Dashboard Elements
+    const chatInput = document.getElementById("chat-input");
+    const sendBtn = document.getElementById("send-btn");
+    const chatHistory = document.getElementById("chat-history");
+    const thinkingEl = document.getElementById("thinking");
+    const chartTooltip = document.getElementById("chart-tooltip");
+    const refreshInsightsBtn = document.getElementById("refreshInsightsBtn");
+    const healthScoreValue = document.getElementById("health-score-value");
+    const healthScoreTrend = document.getElementById("health-score-trend");
+    const healthInsightsContainer = document.getElementById("health-insights-container");
+    const dashboardGreeting = document.getElementById("dashboard-greeting");
+    const dashboardSubtitle = document.getElementById("dashboard-subtitle");
+    const quickGlucose = document.getElementById("quick-glucose");
+    const quickScore = document.getElementById("quick-score");
+    const quickTrend = document.getElementById("quick-trend");
+
+    // --- THEME LOGIC ---
+    function applyTheme(theme) {
+      document.body.dataset.theme = theme;
+      localStorage.setItem("theme", theme);
+      if (chartState.chart) {
+        updateChartTheme(theme);
+      }
+    }
+
+    function updateChartTheme(theme) {
+      if (!chartState.chart) return;
+      const isDark = theme === "dark";
+      const gridColor = isDark ? "#4b5563" : "#e5e7eb";
+      const textColor = isDark ? "#f9fafb" : "#1e293b";
+      const historicalColor = isDark ? "#a78bfa" : "#818cf8";
+      const predictedColor = isDark ? "#93c5fd" : "#3b82f6";
+      const histGradient = chartState.chart.ctx.createLinearGradient(
+        0,
+        0,
+        0,
+        200
+      );
+      histGradient.addColorStop(
+        0,
+        isDark ? "rgba(129, 140, 248, 0.3)" : "rgba(129, 140, 248, 0.5)"
+      );
+      histGradient.addColorStop(1, "rgba(129, 140, 248, 0)");
+
+      chartState.chart.options.scales.y.grid.color = gridColor;
+      chartState.chart.options.scales.x.ticks.color = textColor;
+      chartState.chart.options.scales.y.ticks.color = textColor;
+      chartState.chart.options.plugins.legend.labels.color = textColor;
+
+      chartState.chart.data.datasets[0].borderColor = historicalColor;
+      chartState.chart.data.datasets[0].backgroundColor = histGradient;
+      chartState.chart.data.datasets[0].pointBackgroundColor =
+        historicalColor;
+      chartState.chart.data.datasets[1].borderColor = predictedColor;
+      chartState.chart.data.datasets[1].pointBackgroundColor =
+        predictedColor;
+
+      chartState.chart.update();
+    }
+
+    themeToggle.addEventListener("click", () => {
+      const newTheme =
+        document.body.dataset.theme === "dark" ? "light" : "dark";
+      applyTheme(newTheme);
+    });
+
+    // --- CHART LOGIC ---
+    function formatLabel(ts) {
+      const d = new Date(ts);
+      return `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`;
+    }
+
+    function initChart() {
+      if (chartState.chart) chartState.chart.destroy();
+      const ctx = document.getElementById("glucoseChart").getContext("2d");
+      chartState.chart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: "Historical",
+              data: [],
+              borderWidth: 2.5,
+              tension: 0.4,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              pointHoverBorderWidth: 2,
+              fill: true,
+            },
+            {
+              label: "Predicted",
+              data: [],
+              borderWidth: 2,
+              borderDash: [5, 5],
+              tension: 0.4,
+              pointRadius: 3,
+              pointHoverRadius: 5,
+              pointHoverBorderWidth: 2,
+              fill: false,
+            },
+          ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          animation: { duration: 500, easing: "easeInOutQuad" },
+          interaction: {
+            mode: "index",
+            intersect: false,
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: {
+                maxTicksLimit: 8
+              }
+            },
+            y: {
+              beginAtZero: false,
+              grid: { drawBorder: false },
+              min: 60,
+              max: 300,
+              ticks: {
+                stepSize: 40
+              }
+            },
+          },
+          plugins: {
+            legend: { display: true, position: "top", align: "end" },
+            tooltip: {
+              enabled: false,
+              external: (context) => {
+                const { chart, tooltip } = context;
+                let tooltipEl = chart.canvas.parentNode.querySelector("div");
+
+                if (tooltip.opacity === 0) {
+                  tooltipEl.style.opacity = 0;
+                  return;
+                }
+
+                const { title, body } = tooltip;
+                if (title || body) {
+                  const titleLines = title || [];
+                  const bodyLines = body.map((b) => b.lines);
+
+                  let innerHtml = "<div>";
+
+                  titleLines.forEach((line) => {
+                    innerHtml += `<div class="font-bold text-xs">${line}</div>`;
+                  });
+
+                  bodyLines.forEach((line, i) => {
+                    const colors = tooltip.labelColors[i];
+                    const style = `background: ${colors.backgroundColor}; border-color: ${colors.borderColor}; display: inline-block; width: 10px; height: 10px; margin-right: 5px; border-radius: 50%;`;
+                    innerHtml += `<div class="text-xs mt-1"><span style="${style}"></span>${line}</div>`;
+                  });
+
+                  innerHtml += "</div>";
+                  tooltipEl.innerHTML = innerHtml;
+                }
+
+                const { offsetLeft: positionX, offsetTop: positionY } =
+                  chart.canvas;
+                tooltipEl.style.opacity = 1;
+                tooltipEl.style.left = positionX + tooltip.caretX + "px";
+                tooltipEl.style.top = positionY + tooltip.caretY + "px";
+                tooltipEl.style.transform = "translate(-50%, -120%)";
+                tooltipEl.style.transition = "transform 0.1s ease";
+              },
+            },
+          },
+        },
+      });
+
+      const savedTheme = localStorage.getItem("theme") || "light";
+      updateChartTheme(savedTheme);
+    }
+
+    function updateChart(historicalData, predictionData = []) {
+      chartState.historicalData = historicalData;
+      chartState.predictionData = predictionData;
+
+      const histTimestamps = historicalData.map((d) =>
+        formatLabel(d.timestamp)
+      );
+      const histValues = historicalData.map((d) => d.glucose_value);
+
+      let predLabels = [];
+      let predValuesForChart = [];
+
+      if (predictionData.length > 0 && historicalData.length > 0) {
+        const lastHistTimestamp = new Date(
+          historicalData[historicalData.length - 1].timestamp
+        );
+        predLabels = predictionData.map((_, i) =>
+          formatLabel(
+            new Date(lastHistTimestamp.getTime() + (i + 1) * 5 * 60000)
+          )
+        );
+        const lastHistValue = histValues[histValues.length - 1];
+        predValuesForChart = new Array(histValues.length - 1).fill(null);
+        predValuesForChart.push(lastHistValue, ...predictionData);
+      }
+
+      chartState.chart.data.labels = [...histTimestamps, ...predLabels];
+      chartState.chart.data.datasets[0].data = histValues;
+      chartState.chart.data.datasets[1].data = predValuesForChart;
+      chartState.chart.update();
+    }
+
+    // --- UI & MESSAGE LOGIC ---
+    function showThinking(on = true) {
+      thinkingEl.classList.toggle("hidden", !on);
+    }
+
+    function editMessage(messageText) {
+      chatInput.value = messageText;
+      chatInput.focus();
+    }
+
+    function pushMessage(who, text, rawText = "", type = "normal") {
+      const el = document.createElement("div");
+      el.className = who === "user" ? "text-right" : "text-left";
+
+      let bubbleClass = "";
+      if (type === 'alert') {
+        bubbleClass = 'alert-bubble';
+      } else {
+        bubbleClass = who === "user" ? "bg-indigo-100 text-indigo-800" : "bg-gray-100 text-gray-800";
+      }
+
+      let messageContent = `<div class="chat-bubble inline-block p-2 rounded-lg text-sm ${bubbleClass}">${text}`;
+
+      if (who === "user") {
+        messageContent += `
+            <button class="ml-2 text-indigo-600 hover:text-indigo-800 text-xs" 
+                    onclick="editMessage(decodeURIComponent('${encodeURIComponent(
+          rawText || text
+        )}'))">
+              Edit
+            </button>`;
+      }
+      messageContent += `</div>`;
+      el.innerHTML = messageContent;
+      chatHistory.appendChild(el);
+      chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function applyAiResponseToUI(aiResponse) {
+      const {
+        parsed_info,
+        dose_recommendation,
+        glucose_prediction,
+        contextual_advice,
+      } = aiResponse;
+
+      const carbsEl = document.getElementById("carbs-value");
+      const doseEl = document.getElementById("dose-value");
+      const reasonEl = document.getElementById("dose-reason");
+      const trendEl = document.getElementById("trend-value");
+
+      carbsEl.innerText =
+        parsed_info && typeof parsed_info.carbs !== "undefined"
+          ? `${parsed_info.carbs}g`
+          : "—";
+      if (
+        dose_recommendation &&
+        typeof dose_recommendation.recommended_dose !== "undefined"
+      ) {
+        doseEl.innerText = `${dose_recommendation.recommended_dose}u`;
+        reasonEl.innerText =
+          (dose_recommendation.reasoning_components
+            ? dose_recommendation.reasoning_components.final_summary
+            : dose_recommendation.reasoning) || "";
+      } else {
+        doseEl.innerText = "—";
+        reasonEl.innerText = "";
+      }
+
+      const trend = glucose_prediction?.analysis?.trend || "N/A";
+      trendEl.innerText = trend;
+
+      if (trend.toLowerCase() === 'rising') {
+        pushMessage('aura', "⚠️ **Heads up!** Your glucose trend is rising. You may need to monitor it closely.", "", "alert");
+      } else if (trend.toLowerCase() === 'falling') {
+        pushMessage('aura', "⚠️ **Heads up!** Your glucose trend is falling. Be mindful of potential lows.", "", "alert");
+      }
+
+      let botReply = "I've logged your entry. ";
+      if (parsed_info?.carbs > 0) {
+        botReply = `Got it. Logged a meal of ${parsed_info.carbs}g. `;
+      }
+      if (dose_recommendation?.recommended_dose > 0) {
+        botReply += `Based on this, my suggested dose is <b>${dose_recommendation.recommended_dose} units</b>.`;
+      } else {
+        botReply += "No insulin dose seems necessary right now.";
+      }
+      if (contextual_advice?.exercise_reduction) {
+        botReply += `<br><br><b>Heads up:</b> Consider reducing that dose by about <b>${contextual_advice.exercise_reduction_percent}%</b> due to exercise.`;
+      }
+      pushMessage("aura", botReply);
+    }
+
+    // --- DASHBOARD HEADER UPDATES ---
+    function updateDashboardHeader(data) {
+      const userProfile = data.user_profile || {};
+      const healthScore = data.health_score || {};
+      const glucoseReadings = data.glucose_readings || [];
+
+      // Update greeting with user name
+      const userName = userProfile.name || "User";
+      const firstName = userName.split(' ')[0];
+      const currentHour = new Date().getHours();
+      let greeting = "";
+
+      if (currentHour < 12) greeting = `Good morning, ${firstName}!`;
+      else if (currentHour < 17) greeting = `Good afternoon, ${firstName}!`;
+      else greeting = `Good evening, ${firstName}!`;
+
+      dashboardGreeting.textContent = greeting;
+
+      // Update subtitle with contextual message
+      const score = healthScore.score;
+      let subtitle = "Here's your health overview for today";
+
+      if (score !== null) {
+        if (score >= 85) subtitle = "You're doing an excellent job managing your diabetes! 🌟";
+        else if (score >= 75) subtitle = "Good progress with your diabetes management 👍";
+        else if (score >= 60) subtitle = "Let's work together to improve your health metrics 💪";
+        else subtitle = "Your health needs some attention - we're here to help 🩺";
+      }
+
+      dashboardSubtitle.textContent = subtitle;
+
+      // Update quick stats
+      if (glucoseReadings.length > 0) {
+        const latestReading = glucoseReadings[glucoseReadings.length - 1];
+        quickGlucose.textContent = `${latestReading.glucose_value} mg/dL`;
+
+        // Determine trend from last few readings
+        if (glucoseReadings.length >= 3) {
+          const last3 = glucoseReadings.slice(-3).map(r => r.glucose_value);
+          const avgChange = (last3[2] - last3[0]) / 2;
+          if (avgChange > 15) quickTrend.textContent = "Rising ↗️";
+          else if (avgChange < -15) quickTrend.textContent = "Falling ↘️";
+          else quickTrend.textContent = "Stable ➡️";
+        } else {
+          quickTrend.textContent = "Stable ➡️";
+        }
+      } else {
+        quickGlucose.textContent = "—";
+        quickTrend.textContent = "—";
+      }
+
+      // Update quick score
+      if (score !== null) {
+        quickScore.textContent = `${score}/100`;
+      } else {
+        quickScore.textContent = "—";
+      }
+    }
+
+    // --- HEALTH SCORE & INSIGHTS ---
+    function updateHealthScore(data) {
+      // Use health_score from backend API instead of calculating locally
+      const healthScore = data.health_score || {};
+      const score = healthScore.score !== null ? healthScore.score : 0;
+      const timeInRange = healthScore.time_in_range_percent !== null ? healthScore.time_in_range_percent : 0;
+
+      const scoreElement = healthScoreValue;
+      const trendElement = healthScoreTrend;
+      const circleElement = document.querySelector('.health-score-circle');
+
+      // Animate score update
+      const currentScore = parseInt(scoreElement.textContent) || 0;
+      const targetScore = score;
+      const duration = 1000;
+      const startTime = Date.now();
+
+      function animateScore() {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+        const currentValue = Math.round(currentScore + (targetScore - currentScore) * easeOutQuart);
+
+        scoreElement.textContent = currentValue;
+        circleElement.style.setProperty('--score-percentage', currentValue);
+
+        if (progress < 1) {
+          requestAnimationFrame(animateScore);
+        }
+      }
+
+      animateScore();
+
+      // Update trend based on score and message
+      let trendText = "No data available";
+      if (healthScore.score !== null) {
+        if (score >= 80) trendText = "Excellent control";
+        else if (score >= 70) trendText = "Good control";
+        else if (score >= 60) trendText = "Fair control";
+        else trendText = "Needs attention";
+      } else if (healthScore.message) {
+        trendText = healthScore.message;
+      }
+
+      trendElement.textContent = trendText;
+
+      // Update color based on score
+      let color = '#059669'; // green
+      if (score < 60) color = '#dc2626'; // red
+      else if (score < 80) color = '#d97706'; // yellow
+
+      circleElement.style.setProperty('--accent-color', color);
+    }
+
+    function generateHealthInsights(data) {
+      const insights = [];
+      const healthScore = data.health_score || {};
+      const readings = data.glucose_readings || [];
+
+      if (!readings || readings.length < 3) {
+        return [{
+          type: 'info',
+          icon: '📊',
+          title: 'Getting Started',
+          content: 'Keep logging your glucose readings and meals to unlock personalized insights.'
+        }];
+      }
+
+      // Use backend health score data for insights
+      if (healthScore.score !== null) {
+        // Time in Range Analysis
+        const timeInRangePercent = healthScore.time_in_range_percent || 0;
+
+        insights.push({
+          type: 'glucose',
+          icon: '📈',
+          title: 'Time in Range',
+          content: `You're in the target range (70-180 mg/dL) <span class="insight-value">${timeInRangePercent}%</span> of the time. ${timeInRangePercent >= 70 ? 'Great job!' : 'Aim for at least 70%.'}`
+        });
+
+        // Hypoglycemic events
+        const hypoEvents = healthScore.hypo_events_count || 0;
+        if (hypoEvents > 0) {
+          insights.push({
+            type: 'medication',
+            icon: '⚠️',
+            title: 'Low Glucose Events',
+            content: `You had <span class="insight-value">${hypoEvents}</span> low glucose event${hypoEvents > 1 ? 's' : ''} in the last 24 hours. Consider adjusting insulin timing or having snacks available.`
+          });
+        }
+
+        // Overall score insight
+        const score = healthScore.score;
+        let scoreInsight = '';
+        let scoreIcon = '';
+        let scoreType = 'glucose';
+
+        if (score >= 80) {
+          scoreInsight = `Excellent health score of <span class="insight-value">${score}/100</span>! Keep up the great diabetes management.`;
+          scoreIcon = '🌟';
+          scoreType = 'activity';
+        } else if (score >= 70) {
+          scoreInsight = `Good health score of <span class="insight-value">${score}/100</span>. Small improvements could make a big difference.`;
+          scoreIcon = '👍';
+          scoreType = 'glucose';
+        } else if (score >= 60) {
+          scoreInsight = `Health score of <span class="insight-value">${score}/100</span>. Focus on staying in range more often.`;
+          scoreIcon = '📊';
+          scoreType = 'nutrition';
+        } else {
+          scoreInsight = `Health score of <span class="insight-value">${score}/100</span>. Let's work together to improve your glucose control.`;
+          scoreIcon = '💪';
+          scoreType = 'medication';
+        }
+
+        insights.push({
+          type: scoreType,
+          icon: scoreIcon,
+          title: 'Daily Health Score',
+          content: scoreInsight
+        });
+      }
+
+      // Recent glucose trends
+      if (readings.length >= 6) {
+        const recent = readings.slice(-6).map(r => r.glucose_value);
+        const trend = recent[5] - recent[0];
+
+        if (Math.abs(trend) > 30) {
+          insights.push({
+            type: trend > 0 ? 'medication' : 'nutrition',
+            icon: trend > 0 ? '📈' : '📉',
+            title: 'Recent Trend',
+            content: `Your glucose has ${trend > 0 ? 'risen' : 'dropped'} by <span class="insight-value">${Math.abs(Math.round(trend))} mg/dL</span> in recent readings. ${trend > 0 ? 'Monitor closely and consider insulin if needed.' : 'Good downward trend!'}`
+          });
+        }
+      }
+
+      // Exercise Recommendation
+      if (readings.length > 0) {
+        const recent = readings.slice(-3).map(r => r.glucose_value);
+        const avgRecent = recent.reduce((a, b) => a + b) / recent.length;
+
+        if (avgRecent > 160) {
+          insights.push({
+            type: 'activity',
+            icon: '🏃',
+            title: 'Activity Suggestion',
+            content: `Your recent average glucose is <span class="insight-value">${Math.round(avgRecent)} mg/dL</span>. A 15-minute walk could help bring it down naturally.`
+          });
+        }
+      }
+
+      // Sleep Quality (general recommendation)
+      insights.push({
+        type: 'sleep',
+        icon: '😴',
+        title: 'Sleep Impact',
+        content: 'Quality sleep helps regulate glucose levels. Aim for <span class="insight-value">7-8 hours</span> of consistent sleep each night.'
+      });
+
+      // Nutrition tip
+      insights.push({
+        type: 'nutrition',
+        icon: '🥗',
+        title: 'Nutrition Tip',
+        content: 'Pair carbohydrates with protein and fiber to help stabilize glucose levels and improve your time in range.'
+      });
+
+      return insights.slice(0, 6); // Limit to 6 insights
+    }
+
+    function updateHealthInsights(data) {
+      const insights = generateHealthInsights(data);
+      const container = healthInsightsContainer;
+
+      container.innerHTML = '';
+
+      insights.forEach(insight => {
+        const card = document.createElement('div');
+        card.className = 'insight-card';
+        card.innerHTML = `
+            <div class="insight-header">
+              <div class="insight-icon insight-${insight.type}">
+                ${insight.icon}
+              </div>
+              <div class="insight-title">${insight.title}</div>
+            </div>
+            <div class="insight-content">${insight.content}</div>
+          `;
+        container.appendChild(card);
+      });
+    }
+
+    // --- API CALLS ---
+    async function callApi(endpoint, options = {}) {
+      try {
+        const response = await fetch(`${BASE_URL}${endpoint}`, options);
+        if (!response.ok) {
+          const error = await response
+            .json()
+            .catch(() => ({ message: response.statusText }));
+          throw new Error(error.message || error.error || "Request failed");
+        }
+        if (
+          response.headers.get("Content-Type")?.includes("application/pdf")
+        ) {
+          return response.blob();
+        }
+        return response.json();
+      } catch (error) {
+        console.error(`API call to ${endpoint} failed:`, error);
+        alert(`Error: ${error.message}. Could not connect to the server.`);
+        throw error;
+      }
+    }
+
+    async function loadDashboardData() {
+      if (!currentUserId) return;
+      try {
+        const data = await callApi(
+          `/api/dashboard?user_id=${currentUserId}`
+        );
+        updateChart(data.glucose_readings || []);
+        updateHealthScore(data);
+        updateHealthInsights(data);
+        updateDashboardHeader(data);
+      } catch (error) {
+        updateChart([]);
+        updateHealthScore({ glucose_readings: [] });
+        updateHealthInsights({ glucose_readings: [] });
+        updateDashboardHeader({ user_profile: {}, health_score: {}, glucose_readings: [] });
+      }
+    }
+
+    // --- PAGE NAVIGATION ---
+    function hideAllPages() {
+      Object.values(pageRefs).forEach((el) => (el.style.display = "none"));
+      pageRefs.mainHeader.style.display = "none";
+    }
+
+    function showPage(pageId, isFullScreen = false) {
+      hideAllPages();
+      pageRefs[pageId].style.display = isFullScreen ? "flex" : "block";
+      if (!isFullScreen) pageRefs.mainHeader.style.display = "flex";
+    }
+
+    function updateNav(isLoggedIn) {
+      logOutButton.style.display = isLoggedIn ? "block" : "none";
+      downloadReportBtn.style.display = isLoggedIn ? "block" : "none";
+      registerLink.style.display = isLoggedIn ? "none" : "block";
+      logInLink.style.display = isLoggedIn ? "none" : "block";
+    }
+
+    function showMainPage() {
+      showPage("mainPage");
+      updateNav(false);
+    }
+    function showRegisterPage() {
+      showPage("registerPage", true);
+    }
+    function showLogInPage() {
+      showPage("logInPage", true);
+    }
+
+    async function showDashboardPage() {
+      if (!currentUserId) {
+        showLogInPage();
+        return;
+      }
+      showPage("dashboardPage");
+      updateNav(true);
+      chatHistory.innerHTML = "";
+      pushMessage("aura", "Welcome! How can I help?");
+      await loadDashboardData();
+    }
+
+    // --- EVENT LISTENERS ---
+    logo.addEventListener("click", (e) => {
+      e.preventDefault();
+      showMainPage();
+    });
+    registerLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      showRegisterPage();
+    });
+    logInLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      showLogInPage();
+    });
+    backToLoginLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      showLogInPage();
+    });
+    getStartedBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      showRegisterPage();
+    });
+    logOutButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      currentUserId = null;
+      localStorage.removeItem("currentUserId");
+      showMainPage();
+    });
+
+    backToHomeLinks.forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        showMainPage();
+      });
+    });
+
+    downloadReportBtn.addEventListener("click", async (e) => {
+      e.preventDefault();
+      if (!currentUserId)
+        return alert("Please log in to download a report.");
+
+      const originalText = downloadReportBtn.innerHTML;
+      downloadReportBtn.innerHTML = "Downloading...";
+      downloadReportBtn.style.pointerEvents = "none";
+
+      try {
+        const blob = await callApi(`/api/user/report`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: currentUserId }),
+        });
+
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.style.display = "none";
+        a.href = url;
+
+        const date = new Date().toISOString().slice(0, 10);
+        a.download = `Aura-Report-User-${currentUserId}-${date}.pdf`;
+
+        document.body.appendChild(a);
+        a.click();
+
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      } catch (error) {
+        console.error("Failed to download report:", error);
+      } finally {
+        downloadReportBtn.innerHTML = originalText;
+        downloadReportBtn.style.pointerEvents = "auto";
+      }
+    });
+
+    calibrateAiBtn.addEventListener("click", async () => {
+      if (!currentUserId) return alert("Log in first.");
+      if (
+        !confirm(
+          "This will start personalizing the AI model based on your historical data. This process runs in the background and may take a few minutes. Continue?"
+        )
+      ) {
+        return;
+      }
+      try {
+        const response = await callApi("/api/ai/calibrate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: currentUserId }),
+        });
+        alert(
+          response.message ||
+          "AI calibration has started successfully in the background."
+        );
+      } catch (error) { }
+    });
+
+    refreshInsightsBtn.addEventListener("click", async () => {
+      if (!currentUserId) return alert("Log in first.");
+      try {
+        const data = await callApi(
+          `/api/dashboard?user_id=${currentUserId}`
+        );
+        updateHealthScore(data);
+        updateHealthInsights(data);
+        updateDashboardHeader(data);
+      } catch (error) {
+        console.error("Failed to refresh insights:", error);
+      }
+    });
+
+    registerForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const userData = {
+        username: document.getElementById("register-email").value,
+        password: document.getElementById("register-password").value,
+        name: document.getElementById("register-name").value,
+        age: parseInt(document.getElementById("register-age").value) || null,
+        gender: document.getElementById("register-gender").value || null,
+        phone_number:
+          document.getElementById("register-phone").value || null,
+        weight_kg:
+          parseFloat(document.getElementById("register-weight").value) ||
+          null,
+        height_cm:
+          parseFloat(document.getElementById("register-height").value) ||
+          null,
+      };
+      try {
+        await callApi("/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(userData),
+        });
+        alert("Registration successful! Please log in.");
+        showLogInPage();
+      } catch (error) { }
+    });
+
+    logInForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const loginData = {
+        username: document.getElementById("email-login").value,
+        password: document.getElementById("password-login").value,
+      };
+      try {
+        const data = await callApi("/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(loginData),
+        });
+        currentUserId = data.user_id;
+        localStorage.setItem("currentUserId", currentUserId);
+        await showDashboardPage();
+      } catch (error) { }
+    });
+
+    sendBtn.addEventListener("click", async () => {
+      const text = chatInput.value.trim();
+      if (!text || !currentUserId) return;
+      pushMessage("user", text, text);
+      chatInput.value = "";
+      showThinking(true);
+      try {
+        const aiResponse = await callApi("/api/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message: text, user_id: currentUserId }),
+        });
+        applyAiResponseToUI(aiResponse);
+        const historicalData = await callApi(
+          `/api/dashboard?user_id=${currentUserId}`
+        );
+        updateChart(
+          historicalData.glucose_readings || [],
+          aiResponse.glucose_prediction.adjusted_prediction || []
+        );
+        updateHealthScore(historicalData);
+        updateHealthInsights(historicalData);
+        updateDashboardHeader(historicalData);
+      } catch (error) {
+        pushMessage(
+          "aura",
+          "Sorry, I couldn't get a response. Please check the connection."
+        );
+      } finally {
+        showThinking(false);
+      }
+    });
+    chatInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") sendBtn.click();
+    });
+
+    devSimulateBtn.addEventListener("click", async () => {
+      if (!currentUserId) return alert("Log in first.");
+      try {
+        await callApi("/api/dev/simulate-data", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ user_id: currentUserId }),
+        });
+        alert(
+          "New demo data has been added! The dashboard will now refresh."
+        );
+        await loadDashboardData();
+      } catch (error) { }
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const savedTheme = localStorage.getItem("theme") || "light";
+      applyTheme(savedTheme);
+      initChart();
+
+      const savedUserId = localStorage.getItem("currentUserId");
+      if (savedUserId) {
+        currentUserId = savedUserId;
+        showDashboardPage();
+      } else {
+        showMainPage();
+      }
+    });
+  </script>
+</body>
+
+</html>
