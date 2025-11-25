@@ -1,7 +1,7 @@
 # file: natural_language_processor.py
 # Enhanced NLP for comprehensive health management
 import re
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Optional
 
 # ============================================================================
 # COMPREHENSIVE FOOD DATABASE - Indian & International Foods
@@ -562,7 +562,7 @@ class EnhancedNLPProcessor:
         
         return suggestions
 
-    def get_food_suggestions(self, current_glucose: float, time_of_day: str | None = None) -> List[Dict]:
+    def get_food_suggestions(self, current_glucose: float, time_of_day: Optional[str] = None) -> List[Dict]:
         suggestions = []
         
         if current_glucose < 70:
