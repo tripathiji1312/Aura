@@ -86,13 +86,16 @@ def init_db():
         if conn:
             cur.close()
             conn.close()
+
 def calculate_health_score(user_id: int) -> dict:
     """
-    Calculates a daily 'Health Score' based on the last 24 hours of glucose data.
+    Calculates a daily 'Health Score' based on glucose data.
+    First tries last 24 hours, then falls back to last 7 days, then all available data.
     """
     conn = get_db_connection()
     cur = conn.cursor(cursor_factory=RealDictCursor)
     
+    # Try last 24 hours first
     cur.execute(
         """
         SELECT glucose_value FROM glucose_readings
@@ -101,11 +104,34 @@ def calculate_health_score(user_id: int) -> dict:
         (user_id,)
     )
     readings = cur.fetchall()
+    
+    # If not enough, try last 7 days
+    if not readings or len(readings) < 5:
+        cur.execute(
+            """
+            SELECT glucose_value FROM glucose_readings
+            WHERE user_id = %s AND timestamp >= NOW() - INTERVAL '7 days';
+            """,
+            (user_id,)
+        )
+        readings = cur.fetchall()
+    
+    # If still not enough, get all readings
+    if not readings or len(readings) < 5:
+        cur.execute(
+            """
+            SELECT glucose_value FROM glucose_readings
+            WHERE user_id = %s ORDER BY timestamp DESC LIMIT 100;
+            """,
+            (user_id,)
+        )
+        readings = cur.fetchall()
+    
     cur.close()
     conn.close()
     
-    if not readings or len(readings) < 10: # Require at least 10 readings
-        return { "score": None, "time_in_range_percent": None, "message": "Not enough data from the last 24 hours to calculate a score." }
+    if not readings or len(readings) < 3:  # Require at least 3 readings
+        return { "score": 0, "time_in_range_percent": 0, "hypo_events_count": 0, "message": "Not enough glucose data to calculate score." }
         
     values = [r['glucose_value'] for r in readings]
     total_readings = len(values)
@@ -115,15 +141,15 @@ def calculate_health_score(user_id: int) -> dict:
     in_range_count = sum(1 for v in values if 70 <= v <= 180)
     time_in_range_percent = (in_range_count / total_readings) * 100
     
-    score -= (100 - time_in_range_percent) * 0.5 # Penalty for being out of range
+    score -= (100 - time_in_range_percent) * 0.5  # Penalty for being out of range
     
     hypo_events = sum(1 for v in values if v < 70)
-    score -= hypo_events * 5 # Heavy penalty for lows
+    score -= hypo_events * 5  # Heavy penalty for lows
     
     very_high_events = sum(1 for v in values if v > 250)
-    score -= very_high_events * 2 # Smaller penalty for very highs
+    score -= very_high_events * 2  # Smaller penalty for very highs
     
-    final_score = max(0, int(round(score)))
+    final_score = max(0, min(100, int(round(score))))  # Clamp between 0-100
     
     return {
         "score": final_score,

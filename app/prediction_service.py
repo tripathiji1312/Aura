@@ -10,12 +10,14 @@ import warnings
 warnings.filterwarnings('ignore', category=UserWarning, module='keras')
 warnings.filterwarnings('ignore', category=FutureWarning, module='keras')
 
+from config import BASE_DIR
+
 # --- UPGRADED DYNAMIC MODEL LOADING & CACHING SYSTEM ---
 # We no longer load one model. We create a cache to hold multiple models.
 MODEL_CACHE = {}
 SCALER_CACHE = {}
-DEFAULT_MODEL_PATH = 'glucose_predictor.h5'
-DEFAULT_SCALER_PATH = 'scaler.gz'
+DEFAULT_MODEL_PATH = os.path.join(BASE_DIR, 'models', 'glucose_predictor.h5')
+DEFAULT_SCALER_PATH = os.path.join(BASE_DIR, 'models', 'scaler.gz')
 
 # This is a global variable to match the training configuration
 LOOK_BACK = 12
@@ -26,8 +28,8 @@ def get_model_for_user(user_id: int):
     If a personalized model doesn't exist, it loads and caches the default model.
     This is the core of the fine-tuning feature.
     """
-    user_model_path = f'glucose_predictor_user_{user_id}.h5'
-    user_scaler_path = f'scaler_user_{user_id}.gz'
+    user_model_path = os.path.join(BASE_DIR, 'models', f'glucose_predictor_user_{user_id}.h5')
+    user_scaler_path = os.path.join(BASE_DIR, 'models', f'scaler_user_{user_id}.gz')
     
     # Determine which model files to use for this specific user
     if os.path.exists(user_model_path) and os.path.exists(user_scaler_path):

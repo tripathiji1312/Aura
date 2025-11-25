@@ -4,8 +4,11 @@ import numpy as np
 from stable_baselines3 import DQN
 import torch
 
+import os
+from config import BASE_DIR
+
 # --- Configuration & Model Loading ---
-MODEL_PATH = "aura_dqn_agent.zip"
+MODEL_PATH = os.path.join(BASE_DIR, 'models', 'aura_dqn_agent.zip')
 DEVICE = "cpu" # We use CPU for inference as it's fast enough and avoids GPU issues locally
 
 print("Loading RL agent for recommendation service...")

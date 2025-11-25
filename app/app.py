@@ -28,7 +28,7 @@ def serve_frontend():
 def health_check():
     return "Project Aura Backend is running!"
 
-@app.route("/register", methods=['POST'])
+@app.route("/register", methods=['POST'], strict_slashes=False)
 def register():
     data = request.get_json()
     username, password, name = data.get('username'), data.get('password'), data.get('name')
@@ -52,7 +52,7 @@ def register():
     conn.close()
     return jsonify({"message": "User registered successfully!"}), 201
 
-@app.route("/login", methods=['POST'])
+@app.route("/login", methods=['POST'], strict_slashes=False)
 def login():
     data = request.get_json()
     username, password = data.get('username'), data.get('password')
