@@ -1,16 +1,4 @@
----
-title: Aura Diabetes Monitor
-emoji: 📊
-colorFrom: indigo
-colorTo: blue
-sdk: docker
-app_port: 7860
-pinned: false
-license: mit
-thumbnail: >-
-  https://cdn-uploads.huggingface.co/production/uploads/6856f7e6b190733a4dd7f5d6/RZ7v-I7-7uSY7msZ3h97u.png
-short_description: Open-source intelligence meets personalized healthcare
----
+
 
 <div align="center">
 
