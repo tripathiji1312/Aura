@@ -11,12 +11,13 @@
   <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.2/dist/ScrollTrigger.min.js"></script>
   <script src="https://cdn.jsdelivr.net/gh/studio-freight/lenis@1.0.29/bundled/lenis.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
 
   <!-- Icons -->
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
   <!-- Styles -->
-  <link rel="stylesheet" href="css/style.css?v=26">
+  <link rel="stylesheet" href="css/style.css?v=32">
 </head>
 
 <body>
@@ -274,6 +275,10 @@
           </div>
         </div>
         <div class="header-actions">
+          <button id="btn-refresh-dashboard" class="action-btn" data-tooltip="Refresh dashboard with latest data" data-tooltip-pos="bottom">
+            <i class="ri-refresh-line"></i>
+            <span>Refresh</span>
+          </button>
           <button id="btn-calibrate" class="action-btn" data-tooltip="Retrain the AI model with your latest glucose data for more accurate predictions" data-tooltip-pos="bottom">
             <i class="ri-brain-line"></i>
             <span>Calibrate AI</span>
@@ -375,7 +380,7 @@
             </div>
             <div class="metric-details">
               <span id="score-status-bottom" class="status-text">Analyzing...</span>
-              <span class="trend-text positive"><i class="ri-arrow-up-s-line"></i> Top 10% today</span>
+              <span id="score-explanation" class="trend-text">Loading...</span>
             </div>
           </div>
         </div>
@@ -393,7 +398,7 @@
             </div>
             <div class="metric-details">
               <span class="metric-sub">Target: &gt;70%</span>
-              <span class="trend-text positive"><i class="ri-checkbox-circle-line"></i> On Track</span>
+              <span id="tir-explanation" class="trend-text">Loading...</span>
             </div>
           </div>
         </div>
@@ -405,10 +410,10 @@
             <span class="metric-title">Insulin Sensitivity</span>
           </div>
           <div class="metric-body">
-            <div class="big-value">1:45</div>
-            <span class="metric-sub">1 unit drops 45 mg/dL</span>
+            <div id="isf-value" class="big-value">--</div>
+            <span id="isf-sub" class="metric-sub">Log insulin to calculate</span>
             <div class="metric-details">
-              <span class="trend-text positive"><i class="ri-sun-line"></i> More effective in mornings</span>
+              <span id="isf-explanation" class="trend-text"><i class="ri-information-line"></i> Requires insulin data</span>
             </div>
           </div>
         </div>
@@ -420,10 +425,10 @@
             <span class="metric-title">Risk Analysis</span>
           </div>
           <div class="metric-body">
-            <div class="big-value" style="color: var(--health-good);">Low Risk</div>
-            <span class="metric-sub">Next 4 hours</span>
+            <div id="risk-level" class="big-value" style="color: var(--health-good);">Analyzing...</div>
+            <span id="risk-subtitle" class="metric-sub">Analyzing your data...</span>
             <div class="metric-details">
-              <span class="trend-text positive"><i class="ri-shield-star-line"></i> No hypos predicted</span>
+              <span id="risk-explanation" class="trend-text">Loading risk analysis...</span>
             </div>
           </div>
         </div>
@@ -438,65 +443,217 @@
             <i class="ri-line-chart-line"></i>
           </div>
           <div class="welcome-text">
-            <h1>Analytics</h1>
-            <p class="date-text">Detailed insights into your health data</p>
+            <h1>Advanced Analytics</h1>
+            <p class="date-text">Clinical-grade insights into your glucose patterns</p>
           </div>
+        </div>
+        <div class="header-actions">
+          <select id="analytics-days" class="form-input" style="width: auto; padding: 8px 16px;">
+            <option value="7">Last 7 Days</option>
+            <option value="14" selected>Last 14 Days</option>
+            <option value="30">Last 30 Days</option>
+          </select>
+          <button id="btn-refresh-analytics" class="action-btn" data-tooltip="Refresh analytics data">
+            <i class="ri-refresh-line"></i>
+            <span>Refresh</span>
+          </button>
         </div>
       </header>
 
       <!-- Analytics Content -->
       <section class="analytics-grid">
-        <!-- Weekly Summary Card -->
-        <div class="dashboard-card analytics-card" data-tooltip="Overview of your glucose metrics calculated from all recorded readings" data-tooltip-pos="bottom">
+        
+        <!-- Clinical Metrics Row -->
+        <div class="dashboard-card analytics-card clinical-metrics" data-tooltip="Key clinical indicators used by healthcare providers" data-tooltip-pos="bottom">
           <div class="card-header">
-            <h3 class="card-title"><i class="ri-calendar-line"></i> Weekly Summary</h3>
+            <h3 class="card-title"><i class="ri-stethoscope-line"></i> Clinical Metrics</h3>
           </div>
-          <div class="analytics-stats">
+          <div class="analytics-stats clinical-stats">
+            <div class="stat-item gmi-stat" data-tooltip="Glucose Management Indicator - estimates your A1C from glucose data">
+              <span class="stat-value" id="gmi-value">--</span>
+              <span class="stat-label">GMI (est. A1C)</span>
+              <span class="stat-unit">%</span>
+            </div>
+            <div class="stat-item cv-stat" data-tooltip="Coefficient of Variation - measures glucose stability. Below 36% is considered stable.">
+              <span class="stat-value" id="cv-value">--</span>
+              <span class="stat-label">CV (Variability)</span>
+              <span class="stat-unit">%</span>
+            </div>
             <div class="stat-item" data-tooltip="Mean of all glucose readings - target is 100-140 mg/dL">
               <span class="stat-value" id="avg-glucose">--</span>
               <span class="stat-label">Avg Glucose</span>
+              <span class="stat-unit">mg/dL</span>
             </div>
             <div class="stat-item" data-tooltip="Total number of glucose measurements recorded">
               <span class="stat-value" id="readings-count">--</span>
               <span class="stat-label">Readings</span>
             </div>
-            <div class="stat-item" data-tooltip="Percentage of readings between 70-180 mg/dL - goal is >70%">
-              <span class="stat-value" id="time-in-range-analytics">--</span>
-              <span class="stat-label">Time in Range</span>
+          </div>
+        </div>
+
+        <!-- Time in Range Breakdown -->
+        <div class="dashboard-card analytics-card tir-card" data-tooltip="Detailed breakdown of time spent in each glucose range (ADA guidelines)" data-tooltip-pos="bottom">
+          <div class="card-header">
+            <h3 class="card-title"><i class="ri-pie-chart-line"></i> Time in Range (TIR)</h3>
+          </div>
+          <div class="tir-breakdown">
+            <div class="tir-visual">
+              <div class="tir-bar-container">
+                <div class="tir-segment very-high" id="tir-very-high" style="height: 5%"></div>
+                <div class="tir-segment high" id="tir-high" style="height: 15%"></div>
+                <div class="tir-segment in-range" id="tir-in-range" style="height: 70%"></div>
+                <div class="tir-segment low" id="tir-low" style="height: 7%"></div>
+                <div class="tir-segment very-low" id="tir-very-low" style="height: 3%"></div>
+              </div>
+              <div class="tir-labels">
+                <div class="tir-label very-high">&gt;250 <span id="tir-very-high-pct">5%</span></div>
+                <div class="tir-label high">180-250 <span id="tir-high-pct">15%</span></div>
+                <div class="tir-label in-range">70-180 <span id="tir-in-range-pct">70%</span></div>
+                <div class="tir-label low">54-70 <span id="tir-low-pct">7%</span></div>
+                <div class="tir-label very-low">&lt;54 <span id="tir-very-low-pct">3%</span></div>
+              </div>
             </div>
-            <div class="stat-item" data-tooltip="Number of readings below 70 mg/dL (hypoglycemia) - lower is better">
-              <span class="stat-value" id="hypo-count">0</span>
-              <span class="stat-label">Hypo Events</span>
+            <div class="tir-targets">
+              <div class="target-item good">
+                <i class="ri-checkbox-circle-fill"></i>
+                <span>Goal: &gt;70% in range</span>
+              </div>
+              <div class="target-item warning">
+                <i class="ri-alert-fill"></i>
+                <span>Goal: &lt;4% below 70</span>
+              </div>
+            </div>
+            <div id="tir-summary" class="tir-summary">
+              <!-- Dynamically populated with TIR analysis -->
             </div>
           </div>
         </div>
 
-        <!-- Glucose Distribution Card -->
-        <div class="dashboard-card analytics-card" data-tooltip="Visual breakdown of where your glucose levels fall across Low, Normal, and High ranges" data-tooltip-pos="bottom">
+        <!-- AGP Chart -->
+        <div class="dashboard-card analytics-card full-width agp-card" data-tooltip="Ambulatory Glucose Profile - shows your typical glucose patterns throughout the day" data-tooltip-pos="bottom">
           <div class="card-header">
-            <h3 class="card-title"><i class="ri-pie-chart-line"></i> Glucose Distribution</h3>
+            <h3 class="card-title"><i class="ri-pulse-line"></i> Ambulatory Glucose Profile (AGP)</h3>
+            <p class="card-subtitle">Your typical day - percentile curves show glucose variability patterns</p>
           </div>
-          <div class="distribution-bars">
-            <div class="dist-bar-item" data-tooltip="Hypoglycemia zone - readings below 70 mg/dL require immediate attention">
-              <span class="dist-label">Low (&lt;70)</span>
-              <div class="dist-bar-bg">
-                <div class="dist-bar low" id="dist-low" style="width: 5%"></div>
+          <div class="agp-chart-container">
+            <canvas id="agpChart"></canvas>
+          </div>
+          <div class="agp-legend">
+            <span class="legend-item"><span class="legend-line median"></span> Median (50th)</span>
+            <span class="legend-item"><span class="legend-area iqr"></span> 25th-75th %ile</span>
+            <span class="legend-item"><span class="legend-area range"></span> 10th-90th %ile</span>
+          </div>
+        </div>
+
+        <!-- Dawn Phenomenon Detection -->
+        <div class="dashboard-card analytics-card dawn-card" data-tooltip="Detection of early morning glucose rise (Dawn Phenomenon)" data-tooltip-pos="bottom">
+          <div class="card-header">
+            <h3 class="card-title"><i class="ri-sun-line"></i> Dawn Phenomenon</h3>
+          </div>
+          <div class="dawn-content" id="dawn-content">
+            <div class="dawn-indicator">
+              <div class="dawn-status" id="dawn-status">
+                <i class="ri-loader-4-line spinning"></i>
+                Analyzing...
               </div>
-              <span class="dist-percent" id="dist-low-pct">5%</span>
+              <div class="dawn-details" id="dawn-details">
+                <div class="dawn-stat">
+                  <span class="label">Pre-dawn avg:</span>
+                  <span class="value" id="dawn-pre">--</span>
+                </div>
+                <div class="dawn-stat">
+                  <span class="label">Dawn avg:</span>
+                  <span class="value" id="dawn-post">--</span>
+                </div>
+                <div class="dawn-stat">
+                  <span class="label">Rise:</span>
+                  <span class="value" id="dawn-rise">--</span>
+                </div>
+              </div>
             </div>
-            <div class="dist-bar-item" data-tooltip="Optimal zone - aim to keep most readings here for best health outcomes">
-              <span class="dist-label">In Range (70-180)</span>
-              <div class="dist-bar-bg">
-                <div class="dist-bar in-range" id="dist-range" style="width: 75%"></div>
-              </div>
-              <span class="dist-percent" id="dist-range-pct">75%</span>
+          </div>
+        </div>
+
+        <!-- Pattern Heatmap -->
+        <div class="dashboard-card analytics-card heatmap-card" data-tooltip="Glucose patterns by day of week and hour - darker colors indicate higher glucose" data-tooltip-pos="bottom">
+          <div class="card-header">
+            <h3 class="card-title"><i class="ri-grid-line"></i> Weekly Pattern Heatmap</h3>
+          </div>
+          <div class="heatmap-container" id="heatmap-container">
+            <div class="heatmap-loading">
+              <i class="ri-loader-4-line spinning"></i>
+              Loading pattern data...
             </div>
-            <div class="dist-bar-item" data-tooltip="Hyperglycemia zone - readings above 180 mg/dL may need insulin adjustment">
-              <span class="dist-label">High (&gt;180)</span>
-              <div class="dist-bar-bg">
-                <div class="dist-bar high" id="dist-high" style="width: 20%"></div>
+          </div>
+        </div>
+
+        <!-- Risk Analysis -->
+        <div class="dashboard-card analytics-card risk-card" data-tooltip="Low and High Blood Glucose Risk Indices (LBGI/HBGI)" data-tooltip-pos="bottom">
+          <div class="card-header">
+            <h3 class="card-title"><i class="ri-shield-check-line"></i> Risk Analysis</h3>
+          </div>
+          <div class="risk-content">
+            <div class="risk-item">
+              <span class="risk-label">Low BG Index (LBGI)</span>
+              <div class="risk-bar-container">
+                <div class="risk-bar lbgi" id="lbgi-bar" style="width: 20%"></div>
               </div>
-              <span class="dist-percent" id="dist-high-pct">20%</span>
+              <span class="risk-value" id="lbgi-value">--</span>
+            </div>
+            <div class="risk-item">
+              <span class="risk-label">High BG Index (HBGI)</span>
+              <div class="risk-bar-container">
+                <div class="risk-bar hbgi" id="hbgi-bar" style="width: 30%"></div>
+              </div>
+              <span class="risk-value" id="hbgi-value">--</span>
+            </div>
+            <div class="risk-category" id="risk-category">
+              <span class="category-badge low">Low Risk</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Time Period Analysis -->
+        <div class="dashboard-card analytics-card full-width period-card" data-tooltip="Glucose statistics broken down by time of day" data-tooltip-pos="bottom">
+          <div class="card-header">
+            <h3 class="card-title"><i class="ri-time-line"></i> Time Period Analysis</h3>
+          </div>
+          <div class="period-grid" id="period-grid">
+            <div class="period-item">
+              <div class="period-icon"><i class="ri-moon-line"></i></div>
+              <div class="period-name">Night</div>
+              <div class="period-time">12-6 AM</div>
+              <div class="period-avg" id="period-night">-- mg/dL</div>
+            </div>
+            <div class="period-item">
+              <div class="period-icon"><i class="ri-sun-foggy-line"></i></div>
+              <div class="period-name">Dawn</div>
+              <div class="period-time">6-9 AM</div>
+              <div class="period-avg" id="period-dawn">-- mg/dL</div>
+            </div>
+            <div class="period-item">
+              <div class="period-icon"><i class="ri-sun-line"></i></div>
+              <div class="period-name">Morning</div>
+              <div class="period-time">9-12 PM</div>
+              <div class="period-avg" id="period-morning">-- mg/dL</div>
+            </div>
+            <div class="period-item">
+              <div class="period-icon"><i class="ri-sun-fill"></i></div>
+              <div class="period-name">Afternoon</div>
+              <div class="period-time">12-5 PM</div>
+              <div class="period-avg" id="period-afternoon">-- mg/dL</div>
+            </div>
+            <div class="period-item">
+              <div class="period-icon"><i class="ri-moon-foggy-line"></i></div>
+              <div class="period-name">Evening</div>
+              <div class="period-time">5-9 PM</div>
+              <div class="period-avg" id="period-evening">-- mg/dL</div>
+            </div>
+            <div class="period-item">
+              <div class="period-icon"><i class="ri-moon-clear-line"></i></div>
+              <div class="period-name">Late Night</div>
+              <div class="period-time">9-12 AM</div>
+              <div class="period-avg" id="period-late_night">-- mg/dL</div>
             </div>
           </div>
         </div>
@@ -619,11 +776,11 @@
             <h3 class="card-title"><i class="ri-database-2-line"></i> Data Management</h3>
           </div>
           <div class="data-actions">
-            <button class="action-btn" id="btn-export-data">
+            <button class="data-btn export" id="btn-export-data">
               <i class="ri-download-line"></i>
               <span>Export All Data</span>
             </button>
-            <button class="action-btn" id="btn-clear-data" style="border-color: rgba(239, 68, 68, 0.3); color: #ef4444;">
+            <button class="data-btn danger" id="btn-clear-data">
               <i class="ri-delete-bin-line"></i>
               <span>Clear Demo Data</span>
             </button>
@@ -634,7 +791,7 @@
   </div>
 
   <!-- SCRIPTS -->
-  <script src="js/script.js?v=21"></script>
+  <script src="js/script.js?v=32"></script>
 </body>
 
 </html>

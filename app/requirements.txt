@@ -81,3 +81,7 @@ wheel
 wrapt
 sqlalchemy
 fpdf
+flask-socketio
+python-socketio
+eventlet
+redis

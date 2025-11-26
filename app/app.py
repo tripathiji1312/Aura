@@ -12,12 +12,25 @@ import report_generator
 import matplotlib
 matplotlib.use('Agg')  # Use a non-GUI backend for matplotlib
 
+# Import new services
+from analytics_service import get_full_analytics, ClinicalMetrics, AGPCalculator, PatternAnalyzer, AdvancedGlucoseAnalytics
+from cache_service import cache, on_new_glucose_reading, on_new_meal_log, on_model_calibration
+from websocket_service import (
+    socketio, broadcast_glucose_update, broadcast_prediction_update,
+    broadcast_health_score_update, broadcast_dashboard_refresh,
+    broadcast_calibration_status, get_connection_stats, check_and_send_proactive_alerts
+)
+
 app = Flask(__name__, static_url_path='', static_folder='static')
 
 # --- UPGRADED CORS CONFIGURATION ---
 # This explicitly allows your frontend's origin to access the backend API.
 # NOTE: Update the origin port if your frontend runs on a different one (e.g., 3000 for React)
 CORS(app, origins="*") # Allow all origins for production/Hugging Face
+
+# Initialize WebSocket
+socketio.init_app(app)
+print("[App] WebSocket initialized with Flask-SocketIO")
 # ------------------------------------
 
 @app.route('/')
@@ -215,9 +228,350 @@ def simulate_data_endpoint():
         return jsonify({"error": "A 'user_id' is required"}), 400
     try:
         simulator.generate_and_insert_data(user_id=user_id, days_of_data=3)
+        # Invalidate cache and broadcast update
+        cache.invalidate_all_user_cache(int(user_id))
+        broadcast_dashboard_refresh(int(user_id), "demo_data_added")
         return jsonify({'message': f'Successfully generated 3 days of data for user {user_id}.'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# ==================================================================
+# === ADVANCED ANALYTICS ENDPOINTS =================================
+# ==================================================================
+
+@app.route('/api/analytics/full', methods=['GET'])
+def get_advanced_analytics():
+    """
+    Get comprehensive analytics including AGP, GMI, CV, and pattern analysis.
+    
+    Query params:
+        - user_id: Required
+        - days: Number of days to analyze (default: 7, max: 30)
+    """
+    user_id = request.args.get('user_id')
+    days = min(int(request.args.get('days', 7)), 30)
+    
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+    
+    try:
+        # Get readings and meal logs from database
+        readings = db.get_glucose_readings_with_timestamps(int(user_id), days=days)
+        meal_logs = db.get_meal_logs_for_analytics(int(user_id), days=days)
+        
+        if not readings:
+            return jsonify({"error": "No glucose data available for analysis"}), 404
+        
+        # Generate full analytics
+        analytics = get_full_analytics(int(user_id), readings, meal_logs, days=days)
+        
+        return jsonify(analytics)
+    except Exception as e:
+        print(f"[Analytics] Error: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/analytics/agp', methods=['GET'])
+def get_agp_data():
+    """
+    Get Ambulatory Glucose Profile (AGP) data.
+    Returns percentile curves for 24-hour glucose patterns.
+    """
+    user_id = request.args.get('user_id')
+    days = min(int(request.args.get('days', 14)), 30)
+    
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+    
+    try:
+        readings = db.get_glucose_readings_with_timestamps(int(user_id), days=days)
+        
+        if not readings or len(readings) < 20:
+            return jsonify({"error": "Insufficient data for AGP (need at least 20 readings)"}), 404
+        
+        agp_data = AGPCalculator.calculate_agp(readings, days)
+        return jsonify(agp_data)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/analytics/clinical-metrics', methods=['GET'])
+def get_clinical_metrics():
+    """
+    Get clinical-grade metrics: GMI, CV, Time in Range breakdown, Risk indices.
+    """
+    user_id = request.args.get('user_id')
+    days = min(int(request.args.get('days', 7)), 30)
+    
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+    
+    try:
+        readings = db.get_glucose_readings_with_timestamps(int(user_id), days=days)
+        
+        if not readings:
+            return jsonify({"error": "No glucose data available"}), 404
+        
+        glucose_values = [r.get('glucose_value') for r in readings if r.get('glucose_value')]
+        
+        import numpy as np
+        metrics = {
+            "mean_glucose": round(np.mean(glucose_values), 1),
+            "std_glucose": round(np.std(glucose_values), 1),
+            "gmi": ClinicalMetrics.calculate_gmi(np.mean(glucose_values)),
+            "cv": ClinicalMetrics.calculate_cv(glucose_values),
+            "time_in_range": ClinicalMetrics.calculate_time_in_range(glucose_values),
+            "risk_indices": ClinicalMetrics.calculate_glucose_risk_index(glucose_values),
+            "total_readings": len(glucose_values),
+            "days_analyzed": days
+        }
+        
+        return jsonify(metrics)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/analytics/patterns', methods=['GET'])
+def get_pattern_analysis():
+    """
+    Get pattern analysis: time-of-day breakdown, dawn phenomenon, heatmap data.
+    """
+    user_id = request.args.get('user_id')
+    days = min(int(request.args.get('days', 7)), 30)
+    
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+    
+    try:
+        readings = db.get_glucose_readings_with_timestamps(int(user_id), days=days)
+        
+        if not readings:
+            return jsonify({"error": "No glucose data available"}), 404
+        
+        patterns = {
+            "by_time_period": PatternAnalyzer.analyze_by_time_period(readings),
+            "dawn_phenomenon": PatternAnalyzer.detect_dawn_phenomenon(readings),
+            "heatmap": PatternAnalyzer.generate_pattern_heatmap(readings)
+        }
+        
+        return jsonify(patterns)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/analytics/advanced', methods=['GET'])
+def get_advanced_analytics_combined():
+    """
+    Combined endpoint for all advanced analytics data.
+    Returns AGP, GMI, CV, time-of-day patterns, and distribution in one call.
+    Optimized for the analytics dashboard.
+    """
+    user_id = request.args.get('user_id')
+    days = min(int(request.args.get('days', 7)), 30)
+    
+    if not user_id:
+        return jsonify({"success": False, "error": "user_id is required"}), 400
+    
+    try:
+        # Check cache first
+        cache_key = f"advanced_analytics:{user_id}:{days}"
+        cached = cache.get(cache_key)
+        if cached:
+            return jsonify(cached)
+        
+        # Get readings with timestamps
+        readings = db.get_glucose_readings_with_timestamps(int(user_id), days=days)
+        
+        if not readings or len(readings) < 3:
+            return jsonify({
+                "success": False, 
+                "error": "Not enough data for advanced analytics",
+                "readings_count": len(readings) if readings else 0
+            }), 404
+        
+        # Extract glucose values
+        glucose_values = [r['glucose_value'] for r in readings]
+        
+        # Calculate all metrics
+        analytics_engine = AdvancedGlucoseAnalytics()
+        
+        # AGP
+        agp = analytics_engine.calculate_agp(readings)
+        
+        # GMI (Glucose Management Indicator)
+        avg_glucose = sum(glucose_values) / len(glucose_values)
+        gmi = analytics_engine.calculate_gmi(avg_glucose)
+        
+        # Coefficient of Variation
+        cv = analytics_engine.calculate_coefficient_of_variation(glucose_values)
+        
+        # Time of day patterns (for heatmap)
+        time_patterns = analytics_engine.get_time_of_day_patterns(readings)
+        
+        # Distribution
+        low = len([v for v in glucose_values if v < 70])
+        normal = len([v for v in glucose_values if 70 <= v <= 180])
+        high = len([v for v in glucose_values if v > 180])
+        total = len(glucose_values)
+        
+        # Time in range
+        tir = (normal / total) * 100 if total > 0 else 0
+        
+        # Hypo events
+        hypo_events = low
+        
+        result = {
+            "success": True,
+            "user_id": user_id,
+            "days_analyzed": days,
+            "readings_count": total,
+            "average_glucose": round(avg_glucose, 1),
+            "gmi": round(gmi, 2),
+            "cv": round(cv, 2),
+            "time_in_range": round(tir, 1),
+            "hypo_events": hypo_events,
+            "agp": agp,
+            "time_of_day_patterns": time_patterns,
+            "distribution": {
+                "low": round((low / total) * 100, 1) if total > 0 else 0,
+                "normal": round((normal / total) * 100, 1) if total > 0 else 0,
+                "high": round((high / total) * 100, 1) if total > 0 else 0
+            }
+        }
+        
+        # Cache for 5 minutes
+        cache.set(cache_key, result, ttl=300)
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        print(f"[Advanced Analytics] Error: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
+
+
+@app.route('/api/analytics/meal-impact', methods=['GET'])
+def get_meal_impact_analysis():
+    """
+    Analyze how meals affect glucose levels.
+    """
+    user_id = request.args.get('user_id')
+    days = min(int(request.args.get('days', 7)), 30)
+    
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+    
+    try:
+        readings = db.get_glucose_readings_with_timestamps(int(user_id), days=days)
+        meal_logs = db.get_meal_logs_for_analytics(int(user_id), days=days)
+        
+        if not readings or not meal_logs:
+            return jsonify({"error": "Insufficient data for meal impact analysis"}), 404
+        
+        impact = PatternAnalyzer.analyze_meal_impact(readings, meal_logs)
+        return jsonify(impact)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# ==================================================================
+# === CACHE & WEBSOCKET MANAGEMENT ENDPOINTS =======================
+# ==================================================================
+
+@app.route('/api/cache/health', methods=['GET'])
+def cache_health_check():
+    """Check cache service health status."""
+    return jsonify(cache.health_check())
+
+
+@app.route('/api/cache/invalidate', methods=['POST'])
+def invalidate_user_cache():
+    """Manually invalidate all cache for a user."""
+    user_id = request.json.get('user_id')
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+    
+    result = cache.invalidate_all_user_cache(int(user_id))
+    return jsonify({"message": "Cache invalidated", "details": result})
+
+
+@app.route('/api/websocket/stats', methods=['GET'])
+def websocket_stats():
+    """Get WebSocket connection statistics."""
+    return jsonify(get_connection_stats())
+
+
+# ==================================================================
+# === LAZY LOADING ENDPOINTS =======================================
+# ==================================================================
+
+@app.route('/api/dashboard/glucose-chart', methods=['GET'])
+def get_glucose_chart_data():
+    """
+    Lazy-loaded endpoint for glucose chart data only.
+    """
+    user_id = request.args.get('user_id')
+    hours = int(request.args.get('hours', 24))
+    
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+    
+    try:
+        readings = db.get_glucose_readings_with_timestamps(int(user_id), hours=hours)
+        return jsonify({
+            "readings": readings,
+            "count": len(readings) if readings else 0
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/dashboard/health-score', methods=['GET'])
+def get_health_score_only():
+    """
+    Lazy-loaded endpoint for health score only.
+    """
+    user_id = request.args.get('user_id')
+    
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+    
+    try:
+        health_score = db.calculate_health_score(int(user_id))
+        return jsonify(health_score)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/api/dashboard/metrics', methods=['GET'])
+def get_dashboard_metrics():
+    """
+    Lazy-loaded endpoint for dashboard metrics (TIR, avg glucose, etc.)
+    """
+    user_id = request.args.get('user_id')
+    
+    if not user_id:
+        return jsonify({"error": "user_id is required"}), 400
+    
+    try:
+        readings = db.get_recent_glucose_readings(int(user_id), limit=100)
+        
+        if not readings:
+            return jsonify({"error": "No readings available"}), 404
+        
+        import numpy as np
+        metrics = {
+            "avg_glucose": round(np.mean(readings), 1),
+            "time_in_range": ClinicalMetrics.calculate_time_in_range(readings)["in_range"],
+            "cv": ClinicalMetrics.calculate_cv(readings),
+            "reading_count": len(readings)
+        }
+        return jsonify(metrics)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=7860)
+    # Use socketio.run instead of app.run for WebSocket support
+    socketio.run(app, host='0.0.0.0', port=7860, debug=False, allow_unsafe_werkzeug=True)

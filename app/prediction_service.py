@@ -1,4 +1,4 @@
-# file: prediction_service.py (Upgraded for Personalization)
+# file: prediction_service.py (Upgraded for Personalization + Caching + Circadian Awareness)
 
 import os
 import numpy as np
@@ -6,11 +6,29 @@ import joblib
 from keras.models import load_model
 from scipy import stats
 import warnings
+from datetime import datetime
 
 warnings.filterwarnings('ignore', category=UserWarning, module='keras')
 warnings.filterwarnings('ignore', category=FutureWarning, module='keras')
 
 from config import BASE_DIR
+
+# Import caching and analytics services
+try:
+    from cache_service import cache, cached_prediction
+    CACHING_ENABLED = True
+    print("[Predictor] Redis caching enabled.")
+except ImportError:
+    CACHING_ENABLED = False
+    print("[Predictor] Caching not available.")
+
+try:
+    from analytics_service import CircadianAdjuster, PatternAnalyzer
+    CIRCADIAN_ENABLED = True
+    print("[Predictor] Circadian adjustments enabled.")
+except ImportError:
+    CIRCADIAN_ENABLED = False
+    print("[Predictor] Circadian adjustments not available.")
 
 # --- UPGRADED DYNAMIC MODEL LOADING & CACHING SYSTEM ---
 # We no longer load one model. We create a cache to hold multiple models.
@@ -147,27 +165,83 @@ def predict_future_glucose(user_id: int, recent_glucose_history: list, include_a
         return {"prediction": [], "status": "error", "error_message": f"Unexpected prediction error: {str(e)}"}
 
 
-def generate_hybrid_prediction(user_id: int, recent_glucose_history: list, future_events: dict = None) -> dict:
+def generate_hybrid_prediction(user_id: int, recent_glucose_history: list, future_events: dict = None, glucose_readings_with_timestamps: list = None) -> dict:
+    """
+    Generate predictions with circadian awareness and caching.
+    
+    Args:
+        user_id: User's ID for personalized predictions
+        recent_glucose_history: List of recent glucose values
+        future_events: Dict with carbs, activity info
+        glucose_readings_with_timestamps: Full readings for circadian analysis
+    """
+    # Check cache first if caching is enabled
+    if CACHING_ENABLED:
+        cached_result = cache.get_prediction(user_id, recent_glucose_history)
+        if cached_result is not None:
+            print(f"--- [Predictor] Returning cached prediction for user {user_id} ---")
+            return cached_result
+    
     # Get the baseline prediction, now passing the user_id
     baseline_response = predict_future_glucose(user_id, recent_glucose_history, include_analysis=True)
     
     if baseline_response["status"] == "error":
         return baseline_response
         
-    # ... (the rest of your hybrid adjustment logic is the same)
+    # Get adjusted predictions
     adjusted_predictions = list(baseline_response["prediction"])
+    
+    # === NEW: Apply Circadian/Time-of-Day Adjustments ===
+    if CIRCADIAN_ENABLED:
+        try:
+            current_hour = datetime.now().hour
+            
+            # Apply general circadian rhythm adjustments
+            adjusted_predictions = CircadianAdjuster.adjust_predictions(adjusted_predictions, current_hour)
+            print(f"--- [Predictor] Applied circadian adjustments (hour: {current_hour}) ---")
+            
+            # If we have full readings with timestamps, check for dawn phenomenon
+            if glucose_readings_with_timestamps and len(glucose_readings_with_timestamps) > 20:
+                dawn_analysis = PatternAnalyzer.detect_dawn_phenomenon(glucose_readings_with_timestamps)
+                if dawn_analysis.get("detected"):
+                    adjusted_predictions = CircadianAdjuster.adjust_for_dawn_phenomenon(
+                        adjusted_predictions,
+                        current_hour,
+                        True,
+                        dawn_analysis.get("rise", 0)
+                    )
+                    baseline_response["dawn_phenomenon_detected"] = True
+                    baseline_response["dawn_rise"] = dawn_analysis.get("rise", 0)
+                    print(f"--- [Predictor] Applied dawn phenomenon adjustment (rise: {dawn_analysis.get('rise')} mg/dL) ---")
+            
+            # Add insulin sensitivity info for current time
+            insulin_sensitivity = CircadianAdjuster.get_insulin_sensitivity_factor(current_hour)
+            baseline_response["insulin_sensitivity_factor"] = insulin_sensitivity
+            baseline_response["time_period"] = PatternAnalyzer.get_time_period(current_hour)
+            
+        except Exception as e:
+            print(f"--- [Predictor] Circadian adjustment error (non-fatal): {e} ---")
+    
+    # Apply event-based adjustments (carbs, activity)
     if future_events:
         carbs = future_events.get("carbs", 0)
         if carbs > 0:
-            carb_impact = (carbs / 10) * 3.5 / 12
+            # Adjust carb impact based on time of day insulin sensitivity
+            sensitivity_factor = 1.0
+            if CIRCADIAN_ENABLED:
+                sensitivity_factor = CircadianAdjuster.get_insulin_sensitivity_factor(datetime.now().hour)
+            
+            carb_impact = (carbs / 10) * 3.5 / 12 * (1 / sensitivity_factor)
             for i in range(len(adjusted_predictions)):
-                if i >= 3: adjusted_predictions[i] += carb_impact * (i - 2)
+                if i >= 3: 
+                    adjusted_predictions[i] += carb_impact * (i - 2)
         
         activity_type = future_events.get("activity_type")
         if activity_type:
             activity_impact = 25 / 12
             for i in range(len(adjusted_predictions)):
-                if i >= 2: adjusted_predictions[i] -= activity_impact
+                if i >= 2: 
+                    adjusted_predictions[i] -= activity_impact
 
     last_known = baseline_response["last_known_glucose"]
     final_predictions = apply_physiological_constraints(adjusted_predictions, last_known)
@@ -175,11 +249,24 @@ def generate_hybrid_prediction(user_id: int, recent_glucose_history: list, futur
     baseline_response["adjusted_prediction"] = [int(round(p)) for p in final_predictions]
     baseline_response["original_prediction"] = baseline_response.pop("prediction")
     
-    # ... (add prediction bounds and metadata as before)
+    # Add prediction bounds with variability
     variability = baseline_response.get("analysis", {}).get("variability", 5)
     baseline_response["prediction_bounds"] = {
         "upper": [int(round(p + (variability * (1 + i*0.1)))) for i, p in enumerate(final_predictions)],
         "lower": [int(round(p - (variability * (1 + i*0.1)))) for i, p in enumerate(final_predictions)]
     }
+    
+    # Add prediction metadata
+    baseline_response["prediction_metadata"] = {
+        "generated_at": datetime.now().isoformat(),
+        "circadian_enabled": CIRCADIAN_ENABLED,
+        "caching_enabled": CACHING_ENABLED,
+        "prediction_intervals_minutes": 5,
+        "total_horizon_minutes": len(final_predictions) * 5
+    }
+    
+    # Cache the result if caching is enabled
+    if CACHING_ENABLED:
+        cache.set_prediction(user_id, recent_glucose_history, baseline_response)
 
     return baseline_response
