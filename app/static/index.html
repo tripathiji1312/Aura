@@ -17,7 +17,7 @@
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
 
   <!-- Styles -->
-  <link rel="stylesheet" href="css/style.css?v=32">
+  <link rel="stylesheet" href="css/style.css?v=45">
 </head>
 
 <body>
@@ -25,11 +25,310 @@
   <!-- TOAST CONTAINER -->
   <div id="toast-container" class="toast-container"></div>
 
+  <!-- ONBOARDING MODAL - CINEMATIC EXPERIENCE -->
+  <div id="onboarding-modal" class="onboarding-modal hidden">
+    <div class="onboarding-backdrop">
+      <div class="onboarding-particles" id="onboarding-particles"></div>
+    </div>
+    <div class="onboarding-container">
+      <!-- Close Button -->
+      <button class="onboarding-close" id="onboarding-close" aria-label="Close">
+        <i class="ri-close-line"></i>
+      </button>
+      
+      <div class="onboarding-content">
+        <!-- Progress Bar -->
+        <div class="onboarding-progress">
+          <div class="progress-steps">
+            <div class="step active" data-step="1"><span>1</span></div>
+            <div class="step-line"></div>
+            <div class="step" data-step="2"><span>2</span></div>
+            <div class="step-line"></div>
+            <div class="step" data-step="3"><span>3</span></div>
+            <div class="step-line"></div>
+            <div class="step" data-step="4"><span>4</span></div>
+            <div class="step-line"></div>
+            <div class="step" data-step="5"><span>5</span></div>
+          </div>
+        </div>
+
+        <!-- Slides Container -->
+        <div class="onboarding-slides" id="onboarding-slides">
+          
+          <!-- Slide 1: Welcome -->
+          <div class="onboarding-slide active" data-slide="1">
+            <div class="slide-visual">
+              <div class="hero-icon-container">
+                <div class="hero-ring ring-1"></div>
+                <div class="hero-ring ring-2"></div>
+                <div class="hero-ring ring-3"></div>
+                <div class="hero-icon">
+                  <i class="ri-heart-pulse-fill"></i>
+                </div>
+              </div>
+            </div>
+            <div class="slide-content">
+              <span class="slide-tag">AI-Powered Health</span>
+              <h2 class="slide-title">Welcome to <span class="gradient-text-animated">Aura</span></h2>
+              <p class="slide-description">The most advanced AI diabetes management system, powered by deep learning neural networks</p>
+              
+              <div class="tech-badges">
+                <div class="tech-badge">
+                  <i class="ri-brain-line"></i>
+                  <span>LSTM Neural Net</span>
+                </div>
+                <div class="tech-badge">
+                  <i class="ri-cpu-line"></i>
+                  <span>TensorFlow</span>
+                </div>
+                <div class="tech-badge">
+                  <i class="ri-flask-line"></i>
+                  <span>Real-time Analysis</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 2: Features Overview -->
+          <div class="onboarding-slide" data-slide="2">
+            <div class="slide-full-content">
+              <span class="slide-tag">Powerful Features</span>
+              <h2 class="slide-title">Everything You Need</h2>
+              <p class="slide-description">Comprehensive tools for complete diabetes management</p>
+              
+              <div class="features-showcase">
+                <div class="feature-card-large">
+                  <div class="feature-icon-box gradient-1">
+                    <i class="ri-line-chart-line"></i>
+                  </div>
+                  <div class="feature-info">
+                    <h4>Predictive Glucose Forecasting</h4>
+                    <p>Our LSTM neural network analyzes your patterns to predict glucose levels 2-4 hours ahead with high accuracy</p>
+                    <div class="feature-stats">
+                      <span><strong>85%+</strong> Accuracy</span>
+                      <span><strong>4hr</strong> Forecast</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="feature-card-large">
+                  <div class="feature-icon-box gradient-2">
+                    <i class="ri-chat-voice-line"></i>
+                  </div>
+                  <div class="feature-info">
+                    <h4>Natural Language Processing</h4>
+                    <p>Just type naturally! Our NLP engine understands meal descriptions and extracts nutrition data automatically</p>
+                    <div class="feature-tags">
+                      <span class="tag">Meal Parsing</span>
+                      <span class="tag">Carb Estimation</span>
+                      <span class="tag">Indian Foods</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div class="feature-card-large">
+                  <div class="feature-icon-box gradient-3">
+                    <i class="ri-dashboard-3-line"></i>
+                  </div>
+                  <div class="feature-info">
+                    <h4>Clinical-Grade Analytics</h4>
+                    <p>Professional metrics including AGP, GMI, CV%, and Time in Range - the same tools your doctor uses</p>
+                    <div class="feature-tags">
+                      <span class="tag">AGP Report</span>
+                      <span class="tag">GMI</span>
+                      <span class="tag">PDF Export</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 3: How To Use -->
+          <div class="onboarding-slide" data-slide="3">
+            <div class="slide-full-content">
+              <span class="slide-tag">Getting Started</span>
+              <h2 class="slide-title">How It Works</h2>
+              <p class="slide-description">Three simple steps to better glucose management</p>
+              
+              <div class="workflow-steps">
+                <div class="workflow-step">
+                  <div class="step-number">01</div>
+                  <div class="step-visual">
+                    <div class="phone-mockup">
+                      <div class="chat-preview">
+                        <div class="chat-msg user">"I had 2 chapatis with paneer butter masala"</div>
+                        <div class="chat-msg ai">Got it! Logged 450 kcal, 55g carbs. Your glucose might rise to ~165 mg/dL in 2 hours.</div>
+                      </div>
+                    </div>
+                  </div>
+                  <h4>Chat Naturally</h4>
+                  <p>Log meals, glucose readings, or activities just by typing - no forms needed</p>
+                </div>
+                
+                <div class="workflow-connector">
+                  <i class="ri-arrow-right-line"></i>
+                </div>
+                
+                <div class="workflow-step">
+                  <div class="step-number">02</div>
+                  <div class="step-visual">
+                    <div class="ai-processing">
+                      <div class="ai-brain">
+                        <i class="ri-brain-line"></i>
+                        <div class="pulse-ring"></div>
+                      </div>
+                      <div class="data-flow">
+                        <span class="data-item">Meals</span>
+                        <span class="data-item">Glucose</span>
+                        <span class="data-item">Activity</span>
+                        <span class="data-item">Time</span>
+                      </div>
+                    </div>
+                  </div>
+                  <h4>AI Analyzes</h4>
+                  <p>Our LSTM model processes your data to find patterns and make predictions</p>
+                </div>
+                
+                <div class="workflow-connector">
+                  <i class="ri-arrow-right-line"></i>
+                </div>
+                
+                <div class="workflow-step">
+                  <div class="step-number">03</div>
+                  <div class="step-visual">
+                    <div class="insights-preview">
+                      <div class="insight-card mini">
+                        <i class="ri-lightbulb-line"></i>
+                        <span>Predicted: 142 mg/dL</span>
+                      </div>
+                      <div class="insight-card mini highlight">
+                        <i class="ri-shield-check-line"></i>
+                        <span>In Target Range!</span>
+                      </div>
+                    </div>
+                  </div>
+                  <h4>Get Insights</h4>
+                  <p>Receive predictions, recommendations, and track your health score</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 4: Data Status -->
+          <div class="onboarding-slide" data-slide="4">
+            <div class="slide-full-content">
+              <span class="slide-tag">Your Account</span>
+              <h2 class="slide-title">Your Data Status</h2>
+              <p class="slide-description">Here's what we found in your account</p>
+              
+              <div class="data-status-wrapper">
+                <div class="data-status-card" id="data-status-card">
+                  <!-- Will be populated by JavaScript -->
+                  <div class="data-loading">
+                    <div class="loading-spinner">
+                      <div class="spinner-ring"></div>
+                      <i class="ri-database-2-line"></i>
+                    </div>
+                    <span>Analyzing your data...</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="data-info-note" id="data-info-note">
+                <i class="ri-information-line"></i>
+                <span>Loading information...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slide 5: Quick Setup & Ready -->
+          <div class="onboarding-slide" data-slide="5">
+            <div class="slide-full-content">
+              <span class="slide-tag">Almost There!</span>
+              <h2 class="slide-title">Personalize Your Experience</h2>
+              <p class="slide-description">Set your preferences for better predictions</p>
+              
+              <form class="onboarding-form" id="onboarding-form">
+                <div class="form-grid">
+                  <div class="form-group">
+                    <label><i class="ri-heart-pulse-line"></i> Diabetes Type</label>
+                    <select id="onboard-diabetes-type" class="form-input">
+                      <option value="type1">Type 1 Diabetes</option>
+                      <option value="type2" selected>Type 2 Diabetes</option>
+                      <option value="prediabetes">Pre-diabetes</option>
+                      <option value="gestational">Gestational</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label><i class="ri-focus-3-line"></i> Target Range</label>
+                    <select id="onboard-target-range" class="form-input">
+                      <option value="70-180" selected>70-180 mg/dL (Standard)</option>
+                      <option value="70-140">70-140 mg/dL (Tight)</option>
+                      <option value="80-200">80-200 mg/dL (Relaxed)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label><i class="ri-speed-line"></i> Preferred Units</label>
+                    <select id="onboard-units" class="form-input">
+                      <option value="mg/dL" selected>mg/dL</option>
+                      <option value="mmol/L">mmol/L</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label><i class="ri-notification-3-line"></i> Reminders</label>
+                    <select id="onboard-reminders" class="form-input">
+                      <option value="on" selected>Enabled</option>
+                      <option value="off">Disabled</option>
+                    </select>
+                  </div>
+                </div>
+              </form>
+              
+              <div class="ready-section">
+                <div class="ready-icon">
+                  <i class="ri-checkbox-circle-fill"></i>
+                </div>
+                <h3>You're All Set!</h3>
+                <p>Start by saying something like:</p>
+                <div class="starter-prompts">
+                  <button class="prompt-chip" onclick="copyPrompt(this)">"I had oatmeal for breakfast"</button>
+                  <button class="prompt-chip" onclick="copyPrompt(this)">"My glucose is 120"</button>
+                  <button class="prompt-chip" onclick="copyPrompt(this)">"Add demo data"</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="onboarding-navigation">
+          <button class="onboarding-btn secondary" id="onboarding-skip">
+            <span>Skip Tour</span>
+          </button>
+          <button class="onboarding-btn primary" id="onboarding-prev" style="display: none;">
+            <i class="ri-arrow-left-line"></i>
+            <span>Back</span>
+          </button>
+          <button class="onboarding-btn primary" id="onboarding-next">
+            <span>Next</span>
+            <i class="ri-arrow-right-line"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- HEADER (Visible on Landing/Login, Hidden on Dashboard via JS) -->
   <header class="main-header" id="main-header">
     <div class="container nav-container">
       <div class="logo">AURA</div>
-      <nav class="nav-links">
+      <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Toggle menu">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="nav-links" id="nav-links">
         <a href="#" class="nav-link" data-nav="landing">Vision</a>
         <a href="#" class="nav-link" data-nav="login">Access</a>
         <a href="#" class="nav-link" data-nav="register">Join</a>
@@ -39,122 +338,903 @@
 
   <!-- LANDING PAGE -->
   <main id="landingPage">
-    <section class="hero-section">
+    <!-- HERO SECTION - Clean Bold Design -->
+    <section class="hero-section" id="hero">
+      <!-- Minimal Background -->
       <div class="hero-bg">
-        <div class="hero-orb" style="top: 20%; left: 30%; width: 500px; height: 500px; background: #7000ff;"></div>
-        <div class="hero-orb" style="bottom: 10%; right: 20%; width: 400px; height: 400px; background: #00f0ff;"></div>
+        <div class="hero-gradient-orb orb-1"></div>
+        <div class="hero-gradient-orb orb-2"></div>
+        <div class="hero-noise"></div>
       </div>
 
-      <div class="hero-content">
-        <div class="hero-subtitle">The Next Evolution</div>
-        <h1 class="display-text">
-          <span class="word"><span>Intelligent</span></span><br>
-          <span class="word"><span>Biological</span></span><br>
-          <span class="word"><span>Forecasting</span></span>
+      <!-- Main Content -->
+      <div class="hero-content-simple">
+        <!-- Small Label -->
+        <div class="hero-label" data-reveal>
+          <span class="label-dot"></span>
+          <span>AI-Powered Diabetes Management</span>
+        </div>
+        
+        <!-- Bold Title -->
+        <h1 class="hero-title-bold" data-reveal>
+          Predict Your<br>
+          <span class="title-gradient">Glucose Levels</span><br>
+          Before They Happen
         </h1>
-        <div class="hero-cta" style="margin-top: 3rem;">
-          <button class="btn btn-primary" data-nav="register">Initialize System</button>
-        </div>
-      </div>
-    </section>
+        
+        <!-- Simple Subtitle -->
+        <p class="hero-subtitle-simple" data-reveal>
+          Advanced neural networks analyze your patterns to forecast glucose 
+          up to 4 hours ahead. No guesswork. Just clarity.
+        </p>
 
-    <section class="features-section container">
-      <h2 class="section-title">System Capabilities</h2>
-      <div class="feature-grid">
-        <div class="feature-card">
-          <i class="ri-brain-line feature-icon"></i>
-          <h3 class="feature-title">Neural Prediction</h3>
-          <p class="feature-desc">Advanced LSTM networks forecast glucose trends with 94% accuracy, anticipating
-            biological shifts before they occur.</p>
+        <!-- CTA Buttons -->
+        <div class="hero-buttons" data-reveal>
+          <button class="btn-solid" data-nav="register">
+            Get Started Free
+            <i class="ri-arrow-right-line"></i>
+          </button>
+          <button class="btn-outline" onclick="document.getElementById('features').scrollIntoView({behavior: 'smooth'})">
+            <i class="ri-play-circle-line"></i>
+            See How It Works
+          </button>
         </div>
-        <div class="feature-card">
-          <i class="ri-pulse-line feature-icon"></i>
-          <h3 class="feature-title">Real-time Analysis</h3>
-          <p class="feature-desc">Continuous monitoring of physiological data streams to provide instant, actionable
-            health intelligence.</p>
-        </div>
-        <div class="feature-card">
-          <i class="ri-shield-star-line feature-icon"></i>
-          <h3 class="feature-title">Adaptive Safety</h3>
-          <p class="feature-desc">Reinforcement learning agents optimize insulin recommendations while strictly adhering
-            to safety protocols.</p>
-        </div>
-      </div>
-    </section>
 
-    <!-- ARCHITECTURE SECTION -->
-    <section class="architecture-section container" style="padding: 10rem 0;">
-      <div style="display: flex; align-items: center; gap: 4rem; flex-wrap: wrap;">
-        <div style="flex: 1; min-width: 300px;">
-          <h2 class="section-title" data-reveal>The Architecture</h2>
-          <p class="feature-desc" style="margin-bottom: 2rem; font-size: 1.1rem;">
-            Aura is built on a dual-core AI engine. The <strong>Prediction Core</strong> utilizes historical data to map
-            future glucose trajectories, while the <strong>Decision Core</strong> uses Deep Q-Networks to formulate
-            optimal intervention strategies.
-          </p>
-          <div class="tech-stack" style="display: flex; gap: 1rem; flex-wrap: wrap;">
-            <span class="tech-tag">TensorFlow</span>
-            <span class="tech-tag">PyTorch</span>
-            <span class="tech-tag">Reinforcement Learning</span>
-            <span class="tech-tag">Real-time Stream</span>
+        <!-- Stats Row -->
+        <div class="hero-stats-row" data-reveal>
+          <div class="hero-stat">
+            <span class="stat-value">85%+</span>
+            <span class="stat-label">Prediction Accuracy</span>
           </div>
-        </div>
-        <div class="arch-visual" style="flex: 1; min-width: 300px; height: 400px; position: relative;">
-          <div class="neural-structure">
-            <div class="neural-core"></div>
-            <div class="neural-ring ring-1">
-              <div class="neural-node"></div>
-            </div>
-            <div class="neural-ring ring-2">
-              <div class="neural-node"></div>
-              <div class="neural-node" style="top: auto; bottom: -6px;"></div>
-            </div>
-            <div class="neural-ring ring-3">
-              <div class="neural-node"></div>
-            </div>
+          <div class="stat-divider"></div>
+          <div class="hero-stat">
+            <span class="stat-value">4hr</span>
+            <span class="stat-label">Forecast Window</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="hero-stat">
+            <span class="stat-value">Real-time</span>
+            <span class="stat-label">Analysis</span>
           </div>
         </div>
       </div>
+
+      <!-- Scroll Indicator -->
+      <div class="hero-scroll">
+        <span>Scroll to explore</span>
+        <i class="ri-arrow-down-line"></i>
+      </div>
     </section>
 
-    <!-- IMPACT SECTION -->
-    <section class="impact-section"
-      style="padding: 10rem 0; text-align: center; background: linear-gradient(to top, #050505, #0a0a0a);">
+    <!-- PROBLEM SECTION - Why This Matters -->
+    <section class="problem-section" id="problem">
       <div class="container">
-        <h2 class="section-title" data-reveal>Global Impact</h2>
-        <div class="stats-row"
-          style="display: flex; justify-content: center; gap: 4rem; margin-top: 4rem; flex-wrap: wrap;">
-          <div class="impact-stat">
-            <div class="stat-number display-text" style="font-size: 4rem;">94%</div>
-            <div class="stat-label"
-              style="color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em;">Prediction
-              Accuracy</div>
+        <div class="problem-header" data-reveal>
+          <span class="section-label">The Challenge</span>
+          <h2 class="section-heading-large">
+            Managing diabetes shouldn't feel like<br>
+            <span class="text-gradient-flow">guesswork in the dark.</span>
+          </h2>
+        </div>
+        
+        <div class="problem-grid" data-reveal>
+          <div class="problem-stat-card">
+            <div class="problem-stat-icon">
+              <i class="ri-global-line"></i>
+            </div>
+            <div class="problem-stat-number">537M</div>
+            <div class="problem-stat-label">People with diabetes worldwide</div>
+            <div class="problem-stat-bar"><div style="width: 75%"></div></div>
           </div>
-          <div class="impact-stat">
-            <div class="stat-number display-text" style="font-size: 4rem;">24/7</div>
-            <div class="stat-label"
-              style="color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em;">Monitoring</div>
+          
+          <div class="problem-stat-card">
+            <div class="problem-stat-icon">
+              <i class="ri-question-line"></i>
+            </div>
+            <div class="problem-stat-number">50%</div>
+            <div class="problem-stat-label">Undiagnosed cases globally</div>
+            <div class="problem-stat-bar warning"><div style="width: 50%"></div></div>
           </div>
-          <div class="impact-stat">
-            <div class="stat-number display-text" style="font-size: 4rem;">&lt;0.1s</div>
-            <div class="stat-label"
-              style="color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.1em;">Latency</div>
+          
+          <div class="problem-stat-card">
+            <div class="problem-stat-icon">
+              <i class="ri-heart-pulse-line"></i>
+            </div>
+            <div class="problem-stat-number">4×</div>
+            <div class="problem-stat-label">Increased heart disease risk</div>
+            <div class="problem-stat-bar danger"><div style="width: 90%"></div></div>
+          </div>
+        </div>
+
+        <div class="approach-comparison" data-reveal>
+          <div class="approach-card old">
+            <div class="approach-header">
+              <span class="approach-tag old">Traditional</span>
+              <i class="ri-close-circle-fill"></i>
+            </div>
+            <h4>Reactive Management</h4>
+            <ul>
+              <li><i class="ri-arrow-right-s-line"></i> Check glucose after symptoms</li>
+              <li><i class="ri-arrow-right-s-line"></i> Manual carb calculations</li>
+              <li><i class="ri-arrow-right-s-line"></i> Trial and error dosing</li>
+              <li><i class="ri-arrow-right-s-line"></i> Limited pattern recognition</li>
+            </ul>
+          </div>
+          
+          <div class="approach-divider">
+            <div class="divider-line"></div>
+            <span class="vs-badge">VS</span>
+            <div class="divider-line"></div>
+          </div>
+          
+          <div class="approach-card new">
+            <div class="approach-header">
+              <span class="approach-tag new">Aura AI</span>
+              <i class="ri-checkbox-circle-fill"></i>
+            </div>
+            <h4>Predictive Intelligence</h4>
+            <ul>
+              <li><i class="ri-sparkling-line"></i> Forecast glucose 4 hours ahead</li>
+              <li><i class="ri-sparkling-line"></i> AI-powered meal analysis</li>
+              <li><i class="ri-sparkling-line"></i> RL-trained insulin advisor</li>
+              <li><i class="ri-sparkling-line"></i> Deep pattern learning</li>
+            </ul>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- FOOTER -->
-    <footer style="padding: 4rem 0; border-top: 1px solid rgba(255,255,255,0.05);">
-      <div class="container"
-        style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 2rem;">
-        <div class="logo">AURA</div>
-        <div style="display: flex; gap: 2rem;">
-          <a href="#" class="nav-link">Privacy</a>
-          <a href="#" class="nav-link">Terms</a>
-          <a href="#" class="nav-link">Contact</a>
+    <!-- FEATURES SECTION - Core Capabilities -->
+    <section class="features-section-new" id="features">
+      <div class="container">
+        <div class="section-header" data-reveal>
+          <span class="section-label">Core Features</span>
+          <h2 class="section-heading">Everything you need to manage diabetes intelligently</h2>
+          <p class="section-subheading">Powered by state-of-the-art machine learning and natural language processing</p>
         </div>
-        <div style="color: var(--text-secondary); font-size: 0.8rem;">&copy; 2024 Aura Health AI</div>
+
+        <!-- Feature 1: Glucose Prediction -->
+        <div class="feature-showcase" data-reveal>
+          <div class="feature-showcase-content">
+            <div class="feature-number">01</div>
+            <div class="feature-badge">
+              <i class="ri-line-chart-line"></i>
+              <span>Predictive AI</span>
+            </div>
+            <h3 class="feature-heading">LSTM Neural Network Glucose Prediction</h3>
+            <p class="feature-text">
+              Our deep learning model analyzes your historical glucose patterns, meal data, and activity levels 
+              to forecast your glucose trajectory 2-4 hours into the future. Built with TensorFlow and trained 
+              on real patient data, achieving <strong>85%+ prediction accuracy</strong>.
+            </p>
+            <div class="feature-specs">
+              <div class="spec">
+                <span class="spec-value">128</span>
+                <span class="spec-label">LSTM Units</span>
+              </div>
+              <div class="spec">
+                <span class="spec-value">4hr</span>
+                <span class="spec-label">Forecast Window</span>
+              </div>
+              <div class="spec">
+                <span class="spec-value">85%+</span>
+                <span class="spec-label">Accuracy</span>
+              </div>
+              <div class="spec">
+                <span class="spec-value">&lt;100ms</span>
+                <span class="spec-label">Inference</span>
+              </div>
+            </div>
+            <div class="feature-tech-tags">
+              <span>TensorFlow</span>
+              <span>Keras</span>
+              <span>LSTM</span>
+              <span>Time Series</span>
+            </div>
+          </div>
+          <div class="feature-showcase-visual">
+            <div class="prediction-visual">
+              <div class="prediction-graph">
+                <svg viewBox="0 0 400 200" class="prediction-svg">
+                  <!-- Grid lines -->
+                  <g class="grid-lines" opacity="0.1">
+                    <line x1="0" y1="50" x2="400" y2="50" stroke="white"/>
+                    <line x1="0" y1="100" x2="400" y2="100" stroke="white"/>
+                    <line x1="0" y1="150" x2="400" y2="150" stroke="white"/>
+                  </g>
+                  <!-- Target range -->
+                  <rect x="0" y="60" width="400" height="80" fill="rgba(16,185,129,0.1)" class="target-zone"/>
+                  <!-- Historical line -->
+                  <path d="M0,120 Q50,100 100,110 T200,90" stroke="#60a5fa" stroke-width="3" fill="none" class="history-line"/>
+                  <!-- Prediction line (dashed) -->
+                  <path d="M200,90 Q250,85 300,95 T400,80" stroke="#a78bfa" stroke-width="3" fill="none" stroke-dasharray="8,4" class="prediction-line"/>
+                  <!-- Current point -->
+                  <circle cx="200" cy="90" r="8" fill="#60a5fa" class="current-point">
+                    <animate attributeName="r" values="8;12;8" dur="2s" repeatCount="indefinite"/>
+                  </circle>
+                  <!-- Labels -->
+                  <text x="100" y="20" fill="#60a5fa" font-size="12">Historical</text>
+                  <text x="300" y="20" fill="#a78bfa" font-size="12">Predicted</text>
+                </svg>
+              </div>
+              <div class="prediction-info">
+                <div class="prediction-current">
+                  <span class="label">Current</span>
+                  <span class="value">127 mg/dL</span>
+                </div>
+                <div class="prediction-arrow">
+                  <i class="ri-arrow-right-line"></i>
+                </div>
+                <div class="prediction-future">
+                  <span class="label">In 2 hours</span>
+                  <span class="value">142 mg/dL</span>
+                  <span class="badge">In Range</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature 2: Natural Language Processing -->
+        <div class="feature-showcase reverse" data-reveal>
+          <div class="feature-showcase-content">
+            <div class="feature-number">02</div>
+            <div class="feature-badge">
+              <i class="ri-chat-voice-line"></i>
+              <span>NLP Engine</span>
+            </div>
+            <h3 class="feature-heading">Conversational Meal Logging</h3>
+            <p class="feature-text">
+              Just type naturally! Our NLP engine understands meal descriptions in plain English and automatically 
+              extracts nutritional information. No more searching databases or scanning barcodes. Supports 
+              <strong>Indian cuisine</strong>, international foods, and complex meals.
+            </p>
+            <div class="nlp-examples">
+              <div class="nlp-example">
+                <div class="nlp-input">
+                  <i class="ri-user-line"></i>
+                  <span>"I had 2 chapatis with paneer butter masala"</span>
+                </div>
+                <div class="nlp-output">
+                  <i class="ri-robot-line"></i>
+                  <div class="nlp-parsed">
+                    <span class="parsed-item">🍞 Chapati x2 (180 cal)</span>
+                    <span class="parsed-item">🧀 Paneer Masala (320 cal)</span>
+                    <span class="parsed-total">Total: 500 cal, 45g carbs</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="feature-tech-tags">
+              <span>Pattern Matching</span>
+              <span>Entity Extraction</span>
+              <span>Nutrition DB</span>
+              <span>Indian Foods</span>
+            </div>
+          </div>
+          <div class="feature-showcase-visual">
+            <div class="chat-visual">
+              <div class="chat-window">
+                <div class="chat-message user">
+                  <span>My glucose is 145 after lunch</span>
+                </div>
+                <div class="chat-message bot">
+                  <span>📊 Logged: 145 mg/dL (post-meal)</span>
+                  <span class="chat-insight">Slightly elevated. Your prediction shows return to range in ~2 hours.</span>
+                </div>
+                <div class="chat-message user">
+                  <span>Had rice and dal for lunch</span>
+                </div>
+                <div class="chat-message bot">
+                  <span>🍚 Logged: Rice (200 cal) + Dal (150 cal)</span>
+                  <span class="chat-insight">~65g carbs. Expected glucose rise: 30-40 mg/dL</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature 3: Analytics Dashboard -->
+        <div class="feature-showcase" data-reveal>
+          <div class="feature-showcase-content">
+            <div class="feature-number">03</div>
+            <div class="feature-badge">
+              <i class="ri-dashboard-3-line"></i>
+              <span>Clinical Analytics</span>
+            </div>
+            <h3 class="feature-heading">Professional-Grade Health Metrics</h3>
+            <p class="feature-text">
+              Access the same metrics your endocrinologist uses. Our dashboard provides comprehensive analytics 
+              including <strong>Ambulatory Glucose Profile (AGP)</strong>, Glucose Management Indicator (GMI), 
+              Coefficient of Variation, and Time in Range analysis. Export PDF reports for doctor visits.
+            </p>
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-icon"><i class="ri-donut-chart-line"></i></div>
+                <div class="metric-info">
+                  <span class="metric-name">Time in Range</span>
+                  <span class="metric-desc">70-180 mg/dL target</span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon"><i class="ri-line-chart-line"></i></div>
+                <div class="metric-info">
+                  <span class="metric-name">AGP Report</span>
+                  <span class="metric-desc">14-day glucose profile</span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon"><i class="ri-percent-line"></i></div>
+                <div class="metric-info">
+                  <span class="metric-name">GMI / eA1C</span>
+                  <span class="metric-desc">Estimated HbA1c</span>
+                </div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-icon"><i class="ri-file-chart-line"></i></div>
+                <div class="metric-info">
+                  <span class="metric-name">PDF Export</span>
+                  <span class="metric-desc">Share with doctors</span>
+                </div>
+              </div>
+            </div>
+            <div class="feature-tech-tags">
+              <span>Chart.js</span>
+              <span>AGP Standard</span>
+              <span>PDF Generation</span>
+              <span>Clinical Metrics</span>
+            </div>
+          </div>
+          <div class="feature-showcase-visual">
+            <div class="dashboard-preview">
+              <div class="dash-card tir-card">
+                <h4>Time in Range</h4>
+                <div class="tir-visual">
+                  <div class="tir-bar">
+                    <div class="tir-segment high" style="height: 8%"></div>
+                    <div class="tir-segment target" style="height: 72%"></div>
+                    <div class="tir-segment low" style="height: 20%"></div>
+                  </div>
+                  <div class="tir-labels">
+                    <span>&gt;180: 8%</span>
+                    <span class="target">70-180: 72%</span>
+                    <span>&lt;70: 20%</span>
+                  </div>
+                </div>
+              </div>
+              <div class="dash-card stats-card">
+                <div class="stat-row">
+                  <span>Average Glucose</span>
+                  <strong>142 mg/dL</strong>
+                </div>
+                <div class="stat-row">
+                  <span>GMI (eA1C)</span>
+                  <strong>6.8%</strong>
+                </div>
+                <div class="stat-row">
+                  <span>CV%</span>
+                  <strong>28%</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature 4: Smart Recommendations -->
+        <div class="feature-showcase reverse" data-reveal>
+          <div class="feature-showcase-content">
+            <div class="feature-number">04</div>
+            <div class="feature-badge">
+              <i class="ri-lightbulb-flash-line"></i>
+              <span>AI Recommendations</span>
+            </div>
+            <h3 class="feature-heading">Personalized Health Insights</h3>
+            <p class="feature-text">
+              Aura learns your patterns and provides actionable recommendations. From meal suggestions to activity 
+              reminders, get personalized guidance based on your historical data. The system identifies trends 
+              and helps you understand what affects your glucose levels.
+            </p>
+            <div class="recommendations-preview">
+              <div class="rec-item">
+                <i class="ri-restaurant-line"></i>
+                <span>Consider a lighter dinner — your evening glucose tends to spike</span>
+              </div>
+              <div class="rec-item">
+                <i class="ri-walk-line"></i>
+                <span>A 15-min walk now could help lower your post-meal glucose</span>
+              </div>
+              <div class="rec-item">
+                <i class="ri-time-line"></i>
+                <span>Your glucose is most stable when you eat before 8 PM</span>
+              </div>
+            </div>
+            <div class="feature-tech-tags">
+              <span>Pattern Analysis</span>
+              <span>Behavioral ML</span>
+              <span>Personalization</span>
+            </div>
+          </div>
+          <div class="feature-showcase-visual">
+            <div class="insights-visual">
+              <div class="insight-card">
+                <div class="insight-header">
+                  <i class="ri-sparkling-2-fill"></i>
+                  <span>AI Insight</span>
+                </div>
+                <div class="insight-body">
+                  <h4>Morning Pattern Detected</h4>
+                  <p>Your glucose rises 40mg/dL between 6-8 AM (dawn phenomenon). Consider:</p>
+                  <ul>
+                    <li>Later dinner the night before</li>
+                    <li>Morning protein-rich breakfast</li>
+                    <li>Light morning exercise</li>
+                  </ul>
+                </div>
+                <div class="insight-confidence">
+                  <span>Confidence: 87%</span>
+                  <div class="confidence-bar"><div style="width: 87%"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ARCHITECTURE SECTION - Technical Deep Dive -->
+    <section class="architecture-section-new" id="architecture">
+      <div class="container">
+        <div class="section-header" data-reveal>
+          <span class="section-label">Technical Architecture</span>
+          <h2 class="section-heading">Built for performance and reliability</h2>
+          <p class="section-subheading">A robust full-stack application with modern AI/ML pipeline</p>
+        </div>
+
+        <div class="arch-diagram" data-reveal>
+          <div class="arch-layer frontend">
+            <h4><i class="ri-layout-4-line"></i> Frontend</h4>
+            <div class="arch-items">
+              <span>HTML5/CSS3</span>
+              <span>Vanilla JS</span>
+              <span>Chart.js</span>
+              <span>GSAP</span>
+              <span>WebSocket</span>
+            </div>
+          </div>
+          
+          <div class="arch-connector">
+            <i class="ri-arrow-down-line"></i>
+            <span>REST API + WebSocket</span>
+          </div>
+          
+          <div class="arch-layer backend">
+            <h4><i class="ri-server-line"></i> Backend</h4>
+            <div class="arch-items">
+              <span>Python 3.10</span>
+              <span>Flask</span>
+              <span>Flask-SocketIO</span>
+              <span>SQLAlchemy</span>
+            </div>
+          </div>
+          
+          <div class="arch-connector">
+            <i class="ri-arrow-down-line"></i>
+          </div>
+          
+          <div class="arch-layer-group">
+            <div class="arch-layer ml">
+              <h4><i class="ri-brain-line"></i> ML Pipeline</h4>
+              <div class="arch-items">
+                <span>TensorFlow 2.x</span>
+                <span>Keras</span>
+                <span>LSTM Model</span>
+                <span>NumPy/Pandas</span>
+              </div>
+            </div>
+            
+            <div class="arch-layer database">
+              <h4><i class="ri-database-2-line"></i> Database</h4>
+              <div class="arch-items">
+                <span>PostgreSQL</span>
+                <span>Supabase</span>
+                <span>Redis Cache</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Code Snippet Preview -->
+        <div class="code-preview" data-reveal>
+          <div class="code-tabs">
+            <button class="code-tab active" data-code="prediction">LSTM Prediction</button>
+            <button class="code-tab" data-code="nlp">NLP Parser</button>
+            <button class="code-tab" data-code="api">API Endpoint</button>
+          </div>
+          <div class="code-window">
+            <div class="code-header">
+              <span class="code-filename">prediction_service.py</span>
+              <span class="code-lang">Python</span>
+            </div>
+            <pre class="code-content"><code><span class="code-keyword">class</span> <span class="code-class">GlucosePredictor</span>:
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self):
+        self.model = load_model(<span class="code-string">'models/glucose_predictor.h5'</span>)
+        self.scaler = StandardScaler()
+    
+    <span class="code-keyword">def</span> <span class="code-function">predict</span>(self, glucose_history, meals, activities):
+        <span class="code-comment"># Prepare sequence for LSTM</span>
+        sequence = self._prepare_features(glucose_history, meals)
+        sequence = self.scaler.fit_transform(sequence)
+        
+        <span class="code-comment"># Reshape for LSTM: (samples, timesteps, features)</span>
+        X = sequence.reshape(<span class="code-number">1</span>, <span class="code-number">24</span>, <span class="code-number">5</span>)
+        
+        <span class="code-comment"># Generate prediction</span>
+        prediction = self.model.predict(X)
+        <span class="code-keyword">return</span> self.scaler.inverse_transform(prediction)</code></pre>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REINFORCEMENT LEARNING SECTION - The AI Brain -->
+    <section class="rl-section" id="rl-model">
+      <div class="container">
+        <div class="section-header" data-reveal>
+          <span class="section-label">Advanced AI</span>
+          <h2 class="section-heading">Reinforcement Learning: Trained on Virtual Humans</h2>
+          <p class="section-subheading">Our DQN agent learned optimal insulin management by simulating millions of physiological scenarios</p>
+        </div>
+
+        <div class="rl-showcase" data-reveal>
+          <!-- Left: Explanation -->
+          <div class="rl-explanation">
+            <div class="rl-process">
+              <div class="rl-step">
+                <div class="rl-step-number">01</div>
+                <div class="rl-step-content">
+                  <h4><i class="ri-body-scan-line"></i> Simulated Human Physiology</h4>
+                  <p>We built a comprehensive Type 1 Diabetes simulator based on clinical research and physiological models. It accurately replicates:</p>
+                  <ul class="rl-list">
+                    <li><i class="ri-check-line"></i> Insulin absorption curves (4-hour action profile)</li>
+                    <li><i class="ri-check-line"></i> Carbohydrate metabolism & glucose impact</li>
+                    <li><i class="ri-check-line"></i> Liver glucose production (hepatic output)</li>
+                    <li><i class="ri-check-line"></i> Dawn phenomenon & circadian rhythms</li>
+                    <li><i class="ri-check-line"></i> Individual variability (±15-20%)</li>
+                  </ul>
+                </div>
+              </div>
+
+              <div class="rl-step">
+                <div class="rl-step-number">02</div>
+                <div class="rl-step-content">
+                  <h4><i class="ri-robot-2-line"></i> Deep Q-Network Agent</h4>
+                  <p>Our DQN agent observes the virtual patient's state and learns optimal insulin dosing through trial and error:</p>
+                  <div class="rl-specs">
+                    <div class="rl-spec">
+                      <span class="spec-label">State Space</span>
+                      <span class="spec-value">[Glucose, Trend, Time, IOB, Last Meal]</span>
+                    </div>
+                    <div class="rl-spec">
+                      <span class="spec-label">Action Space</span>
+                      <span class="spec-value">31 discrete doses (0-15u, 0.5u steps)</span>
+                    </div>
+                    <div class="rl-spec">
+                      <span class="spec-label">Reward Function</span>
+                      <span class="spec-value">Time in Range (70-180) + Hypo Penalty</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rl-step">
+                <div class="rl-step-number">03</div>
+                <div class="rl-step-content">
+                  <h4><i class="ri-loop-left-line"></i> Training Loop</h4>
+                  <p>The agent experienced 50,000+ simulated days of diabetes management, learning from each outcome to optimize long-term glucose control.</p>
+                  <div class="rl-training-stats">
+                    <div class="training-stat">
+                      <span class="stat-big">50K+</span>
+                      <span class="stat-small">Training Episodes</span>
+                    </div>
+                    <div class="training-stat">
+                      <span class="stat-big">288</span>
+                      <span class="stat-small">Steps/Day (5min)</span>
+                    </div>
+                    <div class="training-stat">
+                      <span class="stat-big">14.4M</span>
+                      <span class="stat-small">Total Decisions</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Visual Diagram -->
+          <div class="rl-visual">
+            <div class="rl-diagram">
+              <div class="diagram-node simulator">
+                <div class="node-icon"><i class="ri-heart-pulse-line"></i></div>
+                <span class="node-label">Diabetes Simulator</span>
+                <span class="node-desc">Virtual Patient</span>
+              </div>
+              
+              <div class="diagram-arrow down">
+                <span>State: [glucose, trend, IOB...]</span>
+                <i class="ri-arrow-down-line"></i>
+              </div>
+              
+              <div class="diagram-node agent">
+                <div class="node-icon"><i class="ri-brain-line"></i></div>
+                <span class="node-label">DQN Agent</span>
+                <span class="node-desc">Neural Network</span>
+              </div>
+              
+              <div class="diagram-arrow down">
+                <span>Action: Insulin Dose</span>
+                <i class="ri-arrow-down-line"></i>
+              </div>
+              
+              <div class="diagram-node environment">
+                <div class="node-icon"><i class="ri-loop-right-line"></i></div>
+                <span class="node-label">Environment</span>
+                <span class="node-desc">Reward Calculation</span>
+              </div>
+              
+              <div class="diagram-feedback">
+                <i class="ri-arrow-go-back-line"></i>
+                <span>Reward Signal</span>
+              </div>
+            </div>
+
+            <div class="rl-code-snippet">
+              <div class="snippet-header">
+                <span>RealisticDiabetesSimulator</span>
+                <span class="snippet-lang">Python</span>
+              </div>
+              <pre class="snippet-code"><code><span class="code-keyword">class</span> <span class="code-class">RealisticDiabetesSimulator</span>:
+    <span class="code-comment"># Physiological parameters</span>
+    insulin_sensitivity = <span class="code-number">50</span>  <span class="code-comment"># mg/dL per unit</span>
+    insulin_duration = <span class="code-number">4.0</span>     <span class="code-comment"># hours</span>
+    carb_ratio = <span class="code-number">12</span>           <span class="code-comment"># g carbs per unit</span>
+    
+    <span class="code-keyword">def</span> <span class="code-function">step</span>(self, action):
+        <span class="code-comment"># Simulate insulin + carb dynamics</span>
+        <span class="code-comment"># Calculate liver production</span>
+        <span class="code-comment"># Apply dawn phenomenon</span>
+        <span class="code-keyword">return</span> new_glucose, reward</code></pre>
+            </div>
+          </div>
+        </div>
+
+        <!-- Key Insight Box -->
+        <div class="rl-insight-box" data-reveal>
+          <div class="insight-icon">
+            <i class="ri-lightbulb-flash-line"></i>
+          </div>
+          <div class="insight-content">
+            <h4>Why Simulated Training Matters</h4>
+            <p>Training AI on real patients would be dangerous and unethical. Our simulator creates a safe sandbox where the AI can make millions of mistakes and learn from them without any risk. The result is an agent that has seen every possible scenario and knows how to handle it.</p>
+          </div>
+          <div class="insight-tech">
+            <span>Stable-Baselines3</span>
+            <span>Gymnasium</span>
+            <span>PyTorch</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DEMO SECTION - Try It Now -->
+    <section class="demo-section" id="demo">
+      <div class="container">
+        <div class="demo-content" data-reveal>
+          <div class="demo-text">
+            <span class="section-label">Live Demo</span>
+            <h2 class="section-heading">See Aura in action</h2>
+            <p class="section-description">
+              Try our interactive demo with sample data. No sign-up required. 
+              Experience the full power of AI-driven diabetes management.
+            </p>
+            <div class="demo-features">
+              <div class="demo-feature">
+                <i class="ri-checkbox-circle-fill"></i>
+                <span>Pre-loaded sample glucose data</span>
+              </div>
+              <div class="demo-feature">
+                <i class="ri-checkbox-circle-fill"></i>
+                <span>Live predictions and analytics</span>
+              </div>
+              <div class="demo-feature">
+                <i class="ri-checkbox-circle-fill"></i>
+                <span>Chat with natural language</span>
+              </div>
+              <div class="demo-feature">
+                <i class="ri-checkbox-circle-fill"></i>
+                <span>Full dashboard experience</span>
+              </div>
+            </div>
+            <div class="demo-cta">
+              <button class="btn-hero-primary" data-nav="register">
+                <span>Create Free Account</span>
+                <i class="ri-arrow-right-line"></i>
+              </button>
+              <button class="btn-hero-secondary" data-nav="login">
+                <span>Login to Dashboard</span>
+              </button>
+            </div>
+          </div>
+          <div class="demo-visual">
+            <div class="demo-phone">
+              <div class="phone-notch"></div>
+              <div class="phone-screen">
+                <div class="phone-header">
+                  <span class="phone-app-name">Aura</span>
+                  <span class="phone-time">12:45</span>
+                </div>
+                <div class="phone-glucose">
+                  <span class="glucose-value">127</span>
+                  <span class="glucose-unit">mg/dL</span>
+                  <span class="glucose-trend"><i class="ri-arrow-right-up-line"></i> Stable</span>
+                </div>
+                <div class="phone-chart">
+                  <svg viewBox="0 0 160 50">
+                    <path d="M0,35 Q20,30 40,32 T80,25 T120,28 T160,22" 
+                          stroke="url(#phoneGrad)" stroke-width="2" fill="none"/>
+                    <defs>
+                      <linearGradient id="phoneGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" style="stop-color:#60a5fa"/>
+                        <stop offset="100%" style="stop-color:#a78bfa"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+                <div class="phone-prediction">
+                  <i class="ri-sparkling-line"></i>
+                  Predicted: 134 mg/dL in 2h
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- STATS SECTION - Impact Numbers -->
+    <section class="stats-section" id="stats">
+      <div class="container">
+        <div class="stats-grid" data-reveal>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="ri-brain-line"></i></div>
+            <div class="stat-number" data-count="85">0</div>
+            <div class="stat-suffix">%+</div>
+            <div class="stat-label">Prediction Accuracy</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="ri-time-line"></i></div>
+            <div class="stat-number" data-count="4">0</div>
+            <div class="stat-suffix">hr</div>
+            <div class="stat-label">Forecast Window</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="ri-speed-line"></i></div>
+            <div class="stat-number" data-count="100">0</div>
+            <div class="stat-suffix">ms</div>
+            <div class="stat-label">Response Time</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon"><i class="ri-shield-check-line"></i></div>
+            <div class="stat-number" data-count="24">0</div>
+            <div class="stat-suffix">/7</div>
+            <div class="stat-label">Always Available</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIAL/USE CASE SECTION -->
+    <section class="usecase-section" id="usecases">
+      <div class="container">
+        <div class="section-header" data-reveal>
+          <span class="section-label">Use Cases</span>
+          <h2 class="section-heading">Built for real-world diabetes management</h2>
+        </div>
+        
+        <div class="usecase-grid" data-reveal>
+          <div class="usecase-card">
+            <div class="usecase-icon"><i class="ri-user-heart-line"></i></div>
+            <h4>Type 1 Diabetes</h4>
+            <p>Precise insulin timing with glucose predictions. Track meals and activities for better bolus decisions.</p>
+          </div>
+          <div class="usecase-card">
+            <div class="usecase-icon"><i class="ri-heart-pulse-line"></i></div>
+            <h4>Type 2 Diabetes</h4>
+            <p>Understand how diet and exercise affect your glucose. Build healthier habits with data-driven insights.</p>
+          </div>
+          <div class="usecase-card">
+            <div class="usecase-icon"><i class="ri-parent-line"></i></div>
+            <h4>Caregivers</h4>
+            <p>Monitor loved ones' glucose trends. Get alerts for unusual patterns and share reports with healthcare team.</p>
+          </div>
+          <div class="usecase-card">
+            <div class="usecase-icon"><i class="ri-stethoscope-line"></i></div>
+            <h4>Healthcare Providers</h4>
+            <p>Access clinical-grade reports. AGP, GMI, and TIR metrics formatted for professional review.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA SECTION - Final Call to Action -->
+    <section class="cta-section" id="cta">
+      <div class="cta-bg">
+        <div class="cta-orb orb-1"></div>
+        <div class="cta-orb orb-2"></div>
+      </div>
+      <div class="container">
+        <div class="cta-content" data-reveal>
+          <h2 class="cta-heading">Ready to take control of your health?</h2>
+          <p class="cta-text">
+            Join Aura today and experience the future of diabetes management. 
+            Free to use, powered by AI, designed for you.
+          </p>
+          <div class="cta-buttons">
+            <button class="btn-cta-primary" data-nav="register">
+              <span>Get Started Free</span>
+              <i class="ri-arrow-right-line"></i>
+            </button>
+            <button class="btn-cta-secondary" data-nav="login">
+              <span>Sign In</span>
+            </button>
+          </div>
+          <div class="cta-note">
+            <i class="ri-shield-check-line"></i>
+            <span>No credit card required • Free forever • Your data is encrypted</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER - Professional -->
+    <footer class="site-footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-brand">
+            <div class="footer-logo">AURA</div>
+            <p class="footer-tagline">AI-Powered Diabetes Management</p>
+            <div class="footer-social">
+              <a href="#" class="social-link"><i class="ri-github-fill"></i></a>
+              <a href="#" class="social-link"><i class="ri-linkedin-fill"></i></a>
+              <a href="#" class="social-link"><i class="ri-twitter-x-fill"></i></a>
+            </div>
+          </div>
+          
+          <div class="footer-links">
+            <div class="footer-column">
+              <h5>Product</h5>
+              <a href="#features">Features</a>
+              <a href="#rl-model">AI/RL Model</a>
+              <a href="#architecture">Architecture</a>
+            </div>
+            <div class="footer-column">
+              <h5>Resources</h5>
+              <a href="#">Documentation</a>
+              <a href="#">API Reference</a>
+              <a href="#">GitHub</a>
+            </div>
+            <div class="footer-column">
+              <h5>Legal</h5>
+              <a href="#">Privacy Policy</a>
+              <a href="#">Terms of Service</a>
+              <a href="#">Disclaimer</a>
+            </div>
+          </div>
+        </div>
+        
+        <div class="footer-bottom">
+          <p>&copy; 2024 Aura Health AI. Built with ❤️ for the diabetes community.</p>
+          <p class="footer-tech">TensorFlow • Flask • PostgreSQL • Chart.js</p>
+        </div>
       </div>
     </footer>
   </main>
@@ -234,7 +1314,7 @@
 
   <!-- DASHBOARD PAGE -->
   <div id="dashboardPage" class="dashboard-layout hidden">
-    <!-- SIDEBAR -->
+    <!-- SIDEBAR (Desktop Only) -->
     <aside class="sidebar">
       <div class="sidebar-logo">
         <div class="logo-icon"><i class="ri-heart-pulse-line"></i></div>
@@ -261,6 +1341,26 @@
         </a>
       </div>
     </aside>
+
+    <!-- MOBILE BOTTOM NAVIGATION -->
+    <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+      <a href="#" class="mobile-nav-item active" id="mobile-nav-dashboard">
+        <i class="ri-dashboard-3-line"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" class="mobile-nav-item" id="mobile-nav-analytics">
+        <i class="ri-line-chart-line"></i>
+        <span>Analytics</span>
+      </a>
+      <a href="#" class="mobile-nav-item" id="mobile-nav-settings">
+        <i class="ri-settings-3-line"></i>
+        <span>Settings</span>
+      </a>
+      <a href="#" class="mobile-nav-item" id="mobile-nav-logout">
+        <i class="ri-logout-circle-r-line"></i>
+        <span>Logout</span>
+      </a>
+    </nav>
 
     <main id="dashboardContainer" class="dashboard-container" data-lenis-prevent>
       <!-- HEADER SECTION -->
@@ -784,6 +1884,10 @@
               <i class="ri-delete-bin-line"></i>
               <span>Clear Demo Data</span>
             </button>
+            <button class="data-btn" id="btn-show-onboarding" onclick="showOnboarding()">
+              <i class="ri-presentation-line"></i>
+              <span>Replay Onboarding</span>
+            </button>
           </div>
         </div>
       </section>
@@ -791,7 +1895,7 @@
   </div>
 
   <!-- SCRIPTS -->
-  <script src="js/script.js?v=32"></script>
+  <script src="js/script.js?v=42"></script>
 </body>
 
 </html>

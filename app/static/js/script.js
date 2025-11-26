@@ -5,6 +5,466 @@ const BASE_URL = "";
 let currentUserId = null;
 let chartInstance = null;
 
+// ============================================
+// ONBOARDING SYSTEM - CINEMATIC EXPERIENCE
+// ============================================
+class OnboardingManager {
+    constructor() {
+        this.currentSlide = 1;
+        this.totalSlides = 5;
+        this.modal = document.getElementById('onboarding-modal');
+        this.slides = document.querySelectorAll('.onboarding-slide');
+        this.steps = document.querySelectorAll('.progress-steps .step');
+        this.stepLines = document.querySelectorAll('.progress-steps .step-line');
+        this.nextBtn = document.getElementById('onboarding-next');
+        this.prevBtn = document.getElementById('onboarding-prev');
+        this.skipBtn = document.getElementById('onboarding-skip');
+        this.closeBtn = document.getElementById('onboarding-close');
+        this.dataStatus = null;
+        
+        this.init();
+    }
+    
+    init() {
+        if (!this.modal) return;
+        
+        // Event listeners
+        this.nextBtn?.addEventListener('click', () => this.nextSlide());
+        this.prevBtn?.addEventListener('click', () => this.prevSlide());
+        this.skipBtn?.addEventListener('click', () => this.skip());
+        this.closeBtn?.addEventListener('click', () => this.skip());
+        
+        // Step navigation (click on step numbers)
+        this.steps.forEach((step, i) => {
+            step.addEventListener('click', () => {
+                this.goToSlide(i + 1);
+            });
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (this.modal.classList.contains('hidden')) return;
+            if (e.key === 'ArrowRight') this.nextSlide();
+            if (e.key === 'ArrowLeft') this.prevSlide();
+            if (e.key === 'Escape') this.skip();
+        });
+        
+        // Touch swipe support
+        this.initSwipeSupport();
+    }
+    
+    initSwipeSupport() {
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        this.modal?.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        }, { passive: true });
+        
+        this.modal?.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            const diff = touchStartX - touchEndX;
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) this.nextSlide();
+                else this.prevSlide();
+            }
+        }, { passive: true });
+    }
+    
+    async show(force = false) {
+        console.log('Onboarding show() called, force:', force);
+        
+        // Check if THIS USER has seen onboarding (skip check if forced)
+        if (!force) {
+            const userId = currentUserId || localStorage.getItem('aura_user_id');
+            const onboardingKey = userId ? `aura_onboarding_complete_${userId}` : 'aura_onboarding_complete';
+            const hasSeenOnboarding = localStorage.getItem(onboardingKey);
+            console.log('Checking onboarding for user:', userId, 'Key:', onboardingKey, 'Has seen:', hasSeenOnboarding);
+            if (hasSeenOnboarding) return;
+        }
+        
+        // Show modal
+        console.log('Showing onboarding modal...');
+        this.modal?.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        
+        // Load data status for slide 4
+        await this.loadDataStatus();
+        
+        // Start slide animations
+        this.animateSlideContent(1);
+        
+        // Animate entrance
+        if (typeof gsap !== 'undefined') {
+            gsap.fromTo(this.modal, 
+                { opacity: 0 },
+                { opacity: 1, duration: 0.4 }
+            );
+        }
+    }
+    
+    hide() {
+        if (typeof gsap !== 'undefined') {
+            gsap.to(this.modal, {
+                opacity: 0,
+                duration: 0.3,
+                onComplete: () => {
+                    this.modal?.classList.add('hidden');
+                    document.body.style.overflow = '';
+                }
+            });
+        } else {
+            this.modal?.classList.add('hidden');
+            document.body.style.overflow = '';
+        }
+    }
+    
+    animateSlideContent(slideNum) {
+        const activeSlide = document.querySelector(`.onboarding-slide[data-slide="${slideNum}"]`);
+        if (!activeSlide || typeof gsap === 'undefined') return;
+        
+        // Animate elements within the slide
+        const elements = activeSlide.querySelectorAll('.slide-tag, .slide-title, .slide-description, .feature-card-large, .workflow-step, .tech-badge, .data-stat-item, .form-group');
+        
+        gsap.fromTo(elements, 
+            { opacity: 0, y: 20 },
+            { 
+                opacity: 1, 
+                y: 0, 
+                duration: 0.5, 
+                stagger: 0.08,
+                ease: 'power2.out',
+                delay: 0.2
+            }
+        );
+    }
+    
+    async loadDataStatus() {
+        const userId = localStorage.getItem('aura_user_id');
+        const statusCard = document.getElementById('data-status-card');
+        const infoNote = document.getElementById('data-info-note');
+        
+        if (!statusCard) return;
+        
+        try {
+            const res = await fetch(`${BASE_URL}/api/dashboard?user_id=${userId}`);
+            const data = await res.json();
+            
+            const readings = data.glucose_readings || [];
+            const meals = data.recent_meals || [];
+            const healthScore = data.health_score || {};
+            
+            this.dataStatus = {
+                totalReadings: readings.length,
+                meals: meals.length,
+                healthScore: healthScore.score || 0,
+                timeInRange: healthScore.time_in_range_percent || 0,
+                isDemo: this.checkIfDemoData(readings),
+                hypoCount: readings.filter(r => r.glucose_value < 70).length,
+                highCount: readings.filter(r => r.glucose_value > 180).length,
+                avgGlucose: readings.length > 0 ? Math.round(readings.reduce((a, r) => a + r.glucose_value, 0) / readings.length) : 0
+            };
+            
+            this.renderDataStatus();
+            
+        } catch (error) {
+            console.error('Error loading data status:', error);
+            statusCard.innerHTML = `
+                <div class="data-alert empty">
+                    <i class="ri-folder-open-line"></i>
+                    <div class="data-alert-content">
+                        <div class="data-alert-title">No Data Yet</div>
+                        <div class="data-alert-text">Start by logging your meals and glucose readings through the chat! Just type naturally like "I had rice for lunch".</div>
+                    </div>
+                </div>
+            `;
+            if (infoNote) {
+                infoNote.innerHTML = `<i class="ri-lightbulb-line"></i><span>Click "Add Demo Data" on dashboard to explore all features</span>`;
+            }
+        }
+    }
+    
+    checkIfDemoData(readings) {
+        if (readings.length === 0) return false;
+        
+        // Demo data typically has very uniform timestamps
+        const timestamps = readings.map(r => new Date(r.timestamp).getTime());
+        const intervals = [];
+        for (let i = 1; i < timestamps.length; i++) {
+            intervals.push(timestamps[i] - timestamps[i-1]);
+        }
+        
+        if (intervals.length > 5) {
+            const uniqueIntervals = [...new Set(intervals)];
+            if (uniqueIntervals.length <= 2) return true;
+        }
+        
+        const values = readings.map(r => r.glucose_value);
+        const min = Math.min(...values);
+        const max = Math.max(...values);
+        
+        if (max - min < 30 && readings.length > 20) return true;
+        
+        return false;
+    }
+    
+    renderDataStatus() {
+        const statusCard = document.getElementById('data-status-card');
+        const infoNote = document.getElementById('data-info-note');
+        
+        if (!statusCard || !this.dataStatus) return;
+        
+        const { totalReadings, meals, healthScore, timeInRange, isDemo, hypoCount, highCount, avgGlucose } = this.dataStatus;
+        
+        // Determine data type and styling
+        let alertType = 'empty';
+        let alertIcon = 'ri-folder-open-line';
+        let alertTitle = 'No Data Yet';
+        let alertText = 'Start logging to see your stats! Just type what you ate or your glucose reading in the chat.';
+        
+        if (totalReadings > 0) {
+            if (isDemo) {
+                alertType = 'demo';
+                alertIcon = 'ri-flask-line';
+                alertTitle = 'Demo Data Active';
+                alertText = `You have ${totalReadings} sample readings loaded. This helps you explore all dashboard features! Add real readings anytime for accurate predictions.`;
+            } else {
+                alertType = 'real';
+                alertIcon = 'ri-check-double-line';
+                alertTitle = 'Real Data Found!';
+                alertText = `Excellent! You have ${totalReadings} glucose readings logged. The AI learns from your data to make better predictions over time.`;
+            }
+        }
+        
+        // Get color classes
+        let scoreClass = healthScore >= 70 ? 'success' : healthScore >= 50 ? 'highlight' : healthScore >= 30 ? 'warning' : healthScore > 0 ? 'danger' : '';
+        let tirClass = timeInRange >= 70 ? 'success' : timeInRange >= 50 ? 'highlight' : timeInRange > 0 ? 'warning' : '';
+        
+        // Hypo alert
+        let hypoAlert = '';
+        if (hypoCount > 0 && totalReadings > 0) {
+            const hypoPercent = Math.round((hypoCount / totalReadings) * 100);
+            if (hypoPercent >= 20) {
+                hypoAlert = `<div class="data-alert" style="background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.25); margin-top: 16px;">
+                    <i class="ri-alert-line" style="color: #f87171;"></i>
+                    <div class="data-alert-content">
+                        <div class="data-alert-title" style="color: #fca5a5;">⚠️ High Hypoglycemia Events</div>
+                        <div class="data-alert-text">${hypoPercent}% of readings are below 70 mg/dL (${hypoCount} events). This significantly impacts your health score. Aura will help you identify patterns!</div>
+                    </div>
+                </div>`;
+            }
+        }
+        
+        statusCard.innerHTML = `
+            <div class="data-stats-grid">
+                <div class="data-stat-item">
+                    <div class="data-stat-value ${totalReadings > 0 ? 'highlight' : ''}">${totalReadings}</div>
+                    <div class="data-stat-label">Glucose Readings</div>
+                </div>
+                <div class="data-stat-item">
+                    <div class="data-stat-value ${scoreClass}">${healthScore > 0 ? healthScore : '--'}</div>
+                    <div class="data-stat-label">Health Score</div>
+                </div>
+                <div class="data-stat-item">
+                    <div class="data-stat-value ${tirClass}">${timeInRange > 0 ? Math.round(timeInRange) + '%' : '--'}</div>
+                    <div class="data-stat-label">Time in Range</div>
+                </div>
+                <div class="data-stat-item">
+                    <div class="data-stat-value">${avgGlucose > 0 ? avgGlucose : '--'}</div>
+                    <div class="data-stat-label">Avg mg/dL</div>
+                </div>
+            </div>
+            
+            <div class="data-alert ${alertType}">
+                <i class="${alertIcon}"></i>
+                <div class="data-alert-content">
+                    <div class="data-alert-title">${alertTitle}</div>
+                    <div class="data-alert-text">${alertText}</div>
+                </div>
+            </div>
+            ${hypoAlert}
+        `;
+        
+        // Update info note
+        if (infoNote) {
+            if (totalReadings === 0) {
+                infoNote.innerHTML = `<i class="ri-lightbulb-line"></i><span>💡 Try the "Add Demo Data" button on the dashboard to see everything in action!</span>`;
+            } else if (isDemo) {
+                infoNote.innerHTML = `<i class="ri-information-line"></i><span>ℹ️ Demo data lets you explore features. Type real readings anytime for personal insights!</span>`;
+            } else if (hypoCount > totalReadings * 0.2) {
+                infoNote.innerHTML = `<i class="ri-alert-line" style="color: #f87171;"></i><span>⚠️ Your data shows frequent lows. Check the Analytics page for pattern insights.</span>`;
+            } else {
+                infoNote.innerHTML = `<i class="ri-check-line" style="color: #34d399;"></i><span>✨ Your data is building great insights! Keep logging for smarter predictions.</span>`;
+            }
+        }
+    }
+    
+    goToSlide(slideNum) {
+        if (slideNum < 1 || slideNum > this.totalSlides) return;
+        
+        this.currentSlide = slideNum;
+        
+        // Update slides
+        this.slides.forEach((slide, i) => {
+            slide.classList.remove('active', 'prev');
+            if (i + 1 === slideNum) {
+                slide.classList.add('active');
+            } else if (i + 1 < slideNum) {
+                slide.classList.add('prev');
+            }
+        });
+        
+        // Update step indicators
+        this.steps.forEach((step, i) => {
+            step.classList.remove('active', 'completed');
+            if (i + 1 === slideNum) {
+                step.classList.add('active');
+            } else if (i + 1 < slideNum) {
+                step.classList.add('completed');
+            }
+        });
+        
+        // Update step lines
+        this.stepLines.forEach((line, i) => {
+            line.classList.toggle('active', i < slideNum - 1);
+        });
+        
+        // Show/hide prev button
+        if (this.prevBtn) {
+            this.prevBtn.style.display = slideNum > 1 ? 'flex' : 'none';
+        }
+        
+        // Update next button
+        if (this.nextBtn) {
+            if (slideNum === this.totalSlides) {
+                this.nextBtn.innerHTML = `<span>Get Started</span> <i class="ri-check-line"></i>`;
+                this.nextBtn.classList.add('finish');
+            } else {
+                this.nextBtn.innerHTML = `<span>Next</span> <i class="ri-arrow-right-line"></i>`;
+                this.nextBtn.classList.remove('finish');
+            }
+        }
+        
+        // Animate slide content
+        this.animateSlideContent(slideNum);
+    }
+    
+    nextSlide() {
+        if (this.currentSlide < this.totalSlides) {
+            this.goToSlide(this.currentSlide + 1);
+        } else {
+            this.complete();
+        }
+    }
+    
+    prevSlide() {
+        if (this.currentSlide > 1) {
+            this.goToSlide(this.currentSlide - 1);
+        }
+    }
+    
+    skip() {
+        this.complete();
+    }
+    
+    complete() {
+        this.saveSettings();
+        
+        // Mark onboarding as complete (per-user)
+        const userId = currentUserId || localStorage.getItem('aura_user_id');
+        const onboardingKey = userId ? `aura_onboarding_complete_${userId}` : 'aura_onboarding_complete';
+        localStorage.setItem(onboardingKey, 'true');
+        console.log('Onboarding completed for user:', userId);
+        
+        // Hide modal
+        this.hide();
+        
+        // Show welcome toast
+        showToast('success', 'Welcome to Aura! 🎉', 'Your preferences have been saved. Start chatting to log meals and get predictions!');
+    }
+    
+    saveSettings() {
+        const settings = {
+            diabetesType: document.getElementById('onboard-diabetes-type')?.value || 'type2',
+            targetRange: document.getElementById('onboard-target-range')?.value || '70-180',
+            units: document.getElementById('onboard-units')?.value || 'mg/dL',
+            reminders: document.getElementById('onboard-reminders')?.value || 'on'
+        };
+        
+        // Merge with existing settings
+        const existingSettings = JSON.parse(localStorage.getItem('aura_settings') || '{}');
+        const mergedSettings = { ...existingSettings, ...settings };
+        localStorage.setItem('aura_settings', JSON.stringify(mergedSettings));
+    }
+    
+    // Reset and show onboarding (for testing/replay)
+    reset() {
+        const userId = currentUserId || localStorage.getItem('aura_user_id');
+        const onboardingKey = userId ? `aura_onboarding_complete_${userId}` : 'aura_onboarding_complete';
+        localStorage.removeItem(onboardingKey);
+        localStorage.removeItem('aura_onboarding_complete'); // Also legacy key
+        this.currentSlide = 1;
+        this.goToSlide(1);
+        this.show(true); // Force show
+    }
+}
+
+// Global instance
+let onboardingManager = null;
+
+// Initialize onboarding after DOM load
+function initOnboarding() {
+    onboardingManager = new OnboardingManager();
+    console.log('Onboarding manager initialized');
+}
+
+// Show onboarding for new users
+async function showOnboardingIfNeeded() {
+    if (!onboardingManager) {
+        onboardingManager = new OnboardingManager();
+    }
+    await onboardingManager.show();
+}
+
+// Force show onboarding (for testing via console)
+window.showOnboarding = function() {
+    // Clear per-user onboarding key
+    const userId = currentUserId || localStorage.getItem('aura_user_id');
+    const onboardingKey = userId ? `aura_onboarding_complete_${userId}` : 'aura_onboarding_complete';
+    localStorage.removeItem(onboardingKey);
+    // Also remove legacy key
+    localStorage.removeItem('aura_onboarding_complete');
+    console.log('Cleared onboarding for user:', userId);
+    
+    if (!onboardingManager) {
+        onboardingManager = new OnboardingManager();
+    }
+    onboardingManager.show(true);
+};
+
+// Copy starter prompt to chat input
+function copyPrompt(element) {
+    const text = element.textContent.replace(/^"|"$/g, ''); // Remove quotes
+    const chatInput = document.getElementById('chat-input');
+    if (chatInput) {
+        chatInput.value = text;
+        chatInput.focus();
+        
+        // Close onboarding
+        if (onboardingManager) {
+            onboardingManager.complete();
+        }
+        
+        // Briefly highlight the input
+        chatInput.style.borderColor = '#10b981';
+        chatInput.style.boxShadow = '0 0 0 3px rgba(16, 185, 129, 0.2)';
+        setTimeout(() => {
+            chatInput.style.borderColor = '';
+            chatInput.style.boxShadow = '';
+        }, 1000);
+    }
+}
+
 // --- TOOLTIP SYSTEM (Fixed z-index) ---
 (function initTooltips() {
     // Create tooltip container
@@ -290,6 +750,444 @@ function initRevealAnimations() {
             }
         );
     });
+    
+    // Initialize enhanced landing page animations
+    initLandingAnimations();
+}
+
+// ============================================
+// LANDING PAGE - CLEAN BOLD ANIMATIONS
+// ============================================
+function initLandingAnimations() {
+    if (typeof gsap === 'undefined') return;
+    
+    // Register ScrollTrigger if available
+    if (typeof ScrollTrigger !== 'undefined') {
+        gsap.registerPlugin(ScrollTrigger);
+    }
+    
+    // Hero Section - Simple, Bold Animations
+    const heroTimeline = gsap.timeline({ 
+        defaults: { 
+            ease: 'power3.out',
+            duration: 0.8
+        } 
+    });
+    
+    // Label fade in
+    heroTimeline.fromTo('.hero-label', 
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.6 }
+    );
+    
+    // Title animation - bold entrance
+    heroTimeline.fromTo('.hero-title-bold',
+        { y: 50, opacity: 0 },
+        { y: 0, opacity: 1, duration: 1, ease: 'power4.out' },
+        '-=0.3'
+    );
+    
+    // Subtitle
+    heroTimeline.fromTo('.hero-subtitle-simple',
+        { y: 30, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.7 },
+        '-=0.5'
+    );
+    
+    // Buttons with stagger
+    heroTimeline.fromTo('.hero-buttons button',
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, stagger: 0.1 },
+        '-=0.3'
+    );
+    
+    // Stats row
+    heroTimeline.fromTo('.hero-stat',
+        { y: 20, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.5, stagger: 0.08 },
+        '-=0.2'
+    );
+    
+    // Scroll indicator
+    heroTimeline.fromTo('.hero-scroll',
+        { opacity: 0 },
+        { opacity: 1, duration: 0.5 },
+        '-=0.2'
+    );
+    
+    // Parallax on orbs
+    if (typeof ScrollTrigger !== 'undefined') {
+        gsap.to('.hero-gradient-orb.orb-1', {
+            scrollTrigger: {
+                trigger: '.hero-section',
+                start: 'top top',
+                end: 'bottom top',
+                scrub: 2
+            },
+            y: 200,
+            opacity: 0.2
+        });
+        
+        gsap.to('.hero-gradient-orb.orb-2', {
+            scrollTrigger: {
+                trigger: '.hero-section',
+                start: 'top top',
+                end: 'bottom top',
+                scrub: 2
+            },
+            y: 150,
+            opacity: 0.15
+        });
+        
+        // Problem section stat cards
+        document.querySelectorAll('.problem-stat-card').forEach((card, index) => {
+            gsap.fromTo(card,
+                { y: 50, opacity: 0 },
+                {
+                    scrollTrigger: {
+                        trigger: card,
+                        start: 'top 90%',
+                        toggleActions: 'play none none reverse'
+                    },
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.7,
+                    delay: index * 0.1,
+                    ease: 'power3.out'
+                }
+            );
+        });
+        
+        // Approach cards
+        gsap.fromTo('.approach-card.old',
+            { x: -60, opacity: 0 },
+            {
+                scrollTrigger: {
+                    trigger: '.approach-comparison',
+                    start: 'top 85%',
+                    toggleActions: 'play none none reverse'
+                },
+                x: 0,
+                opacity: 1,
+                duration: 0.8,
+                ease: 'power3.out'
+            }
+        );
+        
+        gsap.fromTo('.approach-card.new',
+            { x: 60, opacity: 0 },
+            {
+                scrollTrigger: {
+                    trigger: '.approach-comparison',
+                    start: 'top 85%',
+                    toggleActions: 'play none none reverse'
+                },
+                x: 0,
+                opacity: 1,
+                duration: 0.8,
+                delay: 0.15,
+                ease: 'power3.out'
+            }
+        );
+        
+        // RL Section steps
+        document.querySelectorAll('.rl-step').forEach((step, index) => {
+            gsap.fromTo(step,
+                { x: -40, opacity: 0 },
+                {
+                    scrollTrigger: {
+                        trigger: step,
+                        start: 'top 85%',
+                        toggleActions: 'play none none reverse'
+                    },
+                    x: 0,
+                    opacity: 1,
+                    duration: 0.7,
+                    delay: index * 0.1,
+                    ease: 'power3.out'
+                }
+            );
+        });
+        
+        // RL diagram
+        gsap.fromTo('.rl-diagram',
+            { y: 50, opacity: 0, scale: 0.95 },
+            {
+                scrollTrigger: {
+                    trigger: '.rl-visual',
+                    start: 'top 80%',
+                    toggleActions: 'play none none reverse'
+                },
+                y: 0,
+                opacity: 1,
+                scale: 1,
+                duration: 0.9,
+                ease: 'power3.out'
+            }
+        );
+        
+        // RL diagram nodes stagger
+        document.querySelectorAll('.diagram-node').forEach((node, index) => {
+            gsap.fromTo(node,
+                { y: 30, opacity: 0 },
+                {
+                    scrollTrigger: {
+                        trigger: '.rl-diagram',
+                        start: 'top 75%',
+                        toggleActions: 'play none none reverse'
+                    },
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.6,
+                    delay: 0.3 + (index * 0.15),
+                    ease: 'power3.out'
+                }
+            );
+        });
+        
+        // RL insight box
+        gsap.fromTo('.rl-insight-box',
+            { y: 40, opacity: 0 },
+            {
+                scrollTrigger: {
+                    trigger: '.rl-insight-box',
+                    start: 'top 90%',
+                    toggleActions: 'play none none reverse'
+                },
+                y: 0,
+                opacity: 1,
+                duration: 0.8,
+                ease: 'power3.out'
+            }
+        );
+    }
+    
+    // Feature showcases - staggered content
+    document.querySelectorAll('.feature-showcase').forEach((showcase, index) => {
+        const content = showcase.querySelector('.feature-showcase-content');
+        const visual = showcase.querySelector('.feature-showcase-visual');
+        
+        if (typeof ScrollTrigger !== 'undefined') {
+            gsap.fromTo(content,
+                { x: index % 2 === 0 ? -50 : 50, opacity: 0 },
+                {
+                    scrollTrigger: {
+                        trigger: showcase,
+                        start: 'top 80%',
+                        toggleActions: 'play none none reverse'
+                    },
+                    x: 0,
+                    opacity: 1,
+                    duration: 0.8,
+                    ease: 'power3.out'
+                }
+            );
+            
+            gsap.fromTo(visual,
+                { x: index % 2 === 0 ? 50 : -50, opacity: 0 },
+                {
+                    scrollTrigger: {
+                        trigger: showcase,
+                        start: 'top 80%',
+                        toggleActions: 'play none none reverse'
+                    },
+                    x: 0,
+                    opacity: 1,
+                    duration: 0.8,
+                    delay: 0.2,
+                    ease: 'power3.out'
+                }
+            );
+        }
+    });
+    
+    // Stats counter animation
+    const statNumbers = document.querySelectorAll('.stat-card .stat-number[data-count]');
+    statNumbers.forEach(stat => {
+        const target = parseInt(stat.dataset.count);
+        
+        if (typeof ScrollTrigger !== 'undefined') {
+            gsap.fromTo(stat,
+                { innerText: 0 },
+                {
+                    scrollTrigger: {
+                        trigger: stat,
+                        start: 'top 85%',
+                        toggleActions: 'play none none none'
+                    },
+                    innerText: target,
+                    duration: 2,
+                    ease: 'power2.out',
+                    snap: { innerText: 1 },
+                    onUpdate: function() {
+                        stat.innerText = Math.round(this.targets()[0].innerText);
+                    }
+                }
+            );
+        }
+    });
+    
+    // Architecture diagram layer animations
+    const archLayers = document.querySelectorAll('.arch-layer');
+    archLayers.forEach((layer, index) => {
+        if (typeof ScrollTrigger !== 'undefined') {
+            gsap.fromTo(layer,
+                { y: 30, opacity: 0 },
+                {
+                    scrollTrigger: {
+                        trigger: '.arch-diagram',
+                        start: 'top 80%',
+                        toggleActions: 'play none none reverse'
+                    },
+                    y: 0,
+                    opacity: 1,
+                    duration: 0.6,
+                    delay: index * 0.15,
+                    ease: 'power3.out'
+                }
+            );
+        }
+    });
+    
+    // Use case cards - staggered
+    const usecaseCards = document.querySelectorAll('.usecase-card');
+    usecaseCards.forEach((card, index) => {
+        gsap.fromTo(card,
+            { y: 40, opacity: 0 },
+            {
+                scrollTrigger: {
+                    trigger: '.usecase-grid',
+                    start: 'top 85%',
+                    toggleActions: 'play none none reverse'
+                },
+                y: 0,
+                opacity: 1,
+                duration: 0.6,
+                delay: index * 0.1,
+                ease: 'power3.out'
+            }
+        );
+    });
+    
+    // CTA section - dramatic entrance
+    gsap.fromTo('.cta-content',
+        { y: 50, opacity: 0, scale: 0.95 },
+        {
+            scrollTrigger: {
+                trigger: '.cta-section',
+                start: 'top 80%',
+                toggleActions: 'play none none reverse'
+            },
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            duration: 0.8,
+            ease: 'power3.out'
+        }
+    );
+    
+    // Code tabs functionality
+    initCodeTabs();
+    
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) {
+                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        });
+    });
+    
+    console.log('Landing page animations initialized');
+}
+
+// Code tabs for architecture section
+function initCodeTabs() {
+    const tabs = document.querySelectorAll('.code-tab');
+    
+    const codeSnippets = {
+        prediction: `<span class="code-keyword">class</span> <span class="code-class">GlucosePredictor</span>:
+    <span class="code-keyword">def</span> <span class="code-function">__init__</span>(self):
+        self.model = load_model(<span class="code-string">'models/glucose_predictor.h5'</span>)
+        self.scaler = StandardScaler()
+    
+    <span class="code-keyword">def</span> <span class="code-function">predict</span>(self, glucose_history, meals, activities):
+        <span class="code-comment"># Prepare sequence for LSTM</span>
+        sequence = self._prepare_features(glucose_history, meals)
+        sequence = self.scaler.fit_transform(sequence)
+        
+        <span class="code-comment"># Reshape for LSTM: (samples, timesteps, features)</span>
+        X = sequence.reshape(<span class="code-number">1</span>, <span class="code-number">24</span>, <span class="code-number">5</span>)
+        
+        <span class="code-comment"># Generate prediction</span>
+        prediction = self.model.predict(X)
+        <span class="code-keyword">return</span> self.scaler.inverse_transform(prediction)`,
+        
+        nlp: `<span class="code-keyword">class</span> <span class="code-class">NaturalLanguageProcessor</span>:
+    <span class="code-keyword">def</span> <span class="code-function">parse_meal</span>(self, text):
+        <span class="code-comment"># Pattern matching for food items</span>
+        patterns = [
+            r<span class="code-string">'(\\d+)?\\s*(chapati|roti|rice|dal)'</span>,
+            r<span class="code-string">'(\\d+)?\\s*(cup|bowl|plate)\\s+of\\s+(\\w+)'</span>
+        ]
+        
+        <span class="code-keyword">for</span> pattern <span class="code-keyword">in</span> patterns:
+            match = re.search(pattern, text.lower())
+            <span class="code-keyword">if</span> match:
+                food = self._lookup_nutrition(match)
+                <span class="code-keyword">return</span> {
+                    <span class="code-string">'food'</span>: food.name,
+                    <span class="code-string">'calories'</span>: food.calories,
+                    <span class="code-string">'carbs'</span>: food.carbs
+                }`,
+        
+        api: `<span class="code-keyword">@app.route</span>(<span class="code-string">'/api/predict'</span>, methods=[<span class="code-string">'POST'</span>])
+<span class="code-keyword">def</span> <span class="code-function">predict_glucose</span>():
+    data = request.get_json()
+    user_id = data.get(<span class="code-string">'user_id'</span>)
+    
+    <span class="code-comment"># Fetch user's recent readings</span>
+    readings = db.get_readings(user_id, hours=<span class="code-number">24</span>)
+    meals = db.get_meals(user_id, hours=<span class="code-number">24</span>)
+    
+    <span class="code-comment"># Generate prediction</span>
+    predictor = GlucosePredictor()
+    forecast = predictor.predict(readings, meals)
+    
+    <span class="code-keyword">return</span> jsonify({
+        <span class="code-string">'prediction'</span>: forecast,
+        <span class="code-string">'confidence'</span>: <span class="code-number">0.85</span>
+    })`
+    };
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            // Update active tab
+            tabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            
+            // Update code content
+            const codeType = tab.dataset.code;
+            const codeContent = document.querySelector('.code-content code');
+            const filename = document.querySelector('.code-filename');
+            
+            if (codeContent && codeSnippets[codeType]) {
+                codeContent.innerHTML = codeSnippets[codeType];
+                
+                // Update filename
+                if (filename) {
+                    const filenames = {
+                        prediction: 'prediction_service.py',
+                        nlp: 'natural_language_processor.py',
+                        api: 'app.py'
+                    };
+                    filename.textContent = filenames[codeType];
+                }
+            }
+        });
+    });
 }
 
 // --- AUTH ---
@@ -337,6 +1235,11 @@ async function handleLogin(e) {
             showToast('success', 'Login Successful', `Welcome back, ${result.name || 'User'}!`);
             loadDashboardData();
             navigateTo('dashboard');
+            
+            // Show onboarding for new users (after a brief delay for page transition)
+            setTimeout(() => {
+                showOnboardingIfNeeded();
+            }, 500);
         } else {
             showToast('error', 'Access Denied', result.error || 'Invalid username or password.');
         }
@@ -849,6 +1752,40 @@ document.getElementById('nav-logout').addEventListener('click', (e) => {
     handleLogout();
 });
 
+// MOBILE BOTTOM NAVIGATION
+document.getElementById('mobile-nav-dashboard')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    showDashboardSection('dashboard');
+    updateMobileNavActive('mobile-nav-dashboard');
+});
+
+document.getElementById('mobile-nav-analytics')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    showDashboardSection('analytics');
+    loadAnalyticsData();
+    updateMobileNavActive('mobile-nav-analytics');
+});
+
+document.getElementById('mobile-nav-settings')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    showDashboardSection('settings');
+    loadSettingsData();
+    updateMobileNavActive('mobile-nav-settings');
+});
+
+document.getElementById('mobile-nav-logout')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    handleLogout();
+});
+
+// Update mobile nav active state
+function updateMobileNavActive(activeId) {
+    document.querySelectorAll('.mobile-nav-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    document.getElementById(activeId)?.classList.add('active');
+}
+
 // Show different sections within dashboard
 function showDashboardSection(section) {
     const dashboardContainer = document.getElementById('dashboardContainer');
@@ -861,8 +1798,11 @@ function showDashboardSection(section) {
         return;
     }
     
-    // Update nav active states
+    // Update sidebar nav active states
     document.querySelectorAll('.sidebar-link').forEach(item => item.classList.remove('active'));
+    
+    // Update mobile nav active states
+    document.querySelectorAll('.mobile-nav-item').forEach(item => item.classList.remove('active'));
     
     // Hide all containers first (add hidden class)
     dashboardContainer.classList.add('hidden');
@@ -871,13 +1811,16 @@ function showDashboardSection(section) {
     
     if (section === 'dashboard') {
         dashboardContainer.classList.remove('hidden');
-        document.getElementById('nav-dashboard').classList.add('active');
+        document.getElementById('nav-dashboard')?.classList.add('active');
+        document.getElementById('mobile-nav-dashboard')?.classList.add('active');
     } else if (section === 'analytics') {
         analyticsContainer.classList.remove('hidden');
-        document.getElementById('nav-analytics').classList.add('active');
+        document.getElementById('nav-analytics')?.classList.add('active');
+        document.getElementById('mobile-nav-analytics')?.classList.add('active');
     } else if (section === 'settings') {
         settingsContainer.classList.remove('hidden');
-        document.getElementById('nav-settings').classList.add('active');
+        document.getElementById('nav-settings')?.classList.add('active');
+        document.getElementById('mobile-nav-settings')?.classList.add('active');
     }
 }
 
@@ -3263,6 +4206,30 @@ function initLazyLoading() {
 
 // --- EVENTS ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize onboarding system
+    initOnboarding();
+    
+    // Mobile Menu Toggle
+    const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+    const navLinks = document.getElementById('nav-links');
+    
+    if (mobileMenuToggle && navLinks) {
+        mobileMenuToggle.addEventListener('click', () => {
+            mobileMenuToggle.classList.toggle('active');
+            navLinks.classList.toggle('active');
+            document.body.style.overflow = navLinks.classList.contains('active') ? 'hidden' : '';
+        });
+        
+        // Close menu when clicking a nav link
+        navLinks.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenuToggle.classList.remove('active');
+                navLinks.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+    }
+    
     // Navigation
     document.addEventListener('click', e => {
         if (e.target.matches('[data-nav]')) {
@@ -3304,6 +4271,10 @@ document.addEventListener('DOMContentLoaded', () => {
         initLazyLoading();
         // Start auto-refresh
         startAutoRefresh();
+        // Show onboarding if not completed
+        setTimeout(() => {
+            showOnboardingIfNeeded();
+        }, 800);
     } else {
         navigateTo('landing');
     }
